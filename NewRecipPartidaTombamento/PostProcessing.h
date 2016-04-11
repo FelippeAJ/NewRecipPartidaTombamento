@@ -1,7 +1,6 @@
 #ifndef POSTPROCESSING_H
 #define POSTPROCESSING_H
 
-#include "Input.h"
 #include <cmath>
 #include "Constants.h"
 #include "Refrigerant.h"
@@ -114,8 +113,7 @@ public:
 
 // PERDA DE POTENCIA NA TRANSMISSAO
      
-	//void calcTransmissionPotencyLose(double bearingLoses, int contador);
-	void calcTransmissionPotencyLose(double loses, int contador);
+	void calcTransmissionPotencyLose(double bearingLoses, int contador);
 
 // TRABALHO ESPECIFICO IDEAL NECESSARIO AO GAS
 
@@ -147,8 +145,8 @@ public:
 
 // TRABALHO ESPECÍFICO DE COMPRESSAO ISENTROPICA
      
+	//void calcSpecificWork(double TLS, double PLS, double TLD, double PLD, double TDC, double TC);
 	void calcSpecificWork(double sucLineTempValue, double sucLineRhoValue, double disLinePresValue);
-
 
 // POTENCIA TEORICA COM BASE EM COMPRESSAO ISENTROPICA
      
@@ -157,6 +155,8 @@ public:
 
 // TRABALHO ESPECÍFICO DE COMPRESSAO ISENTROPICA COM SUPERAQUEC.
      
+	//void calcSuperHeatingSpecificWork(double sucLineTempValue, double sucLinePresValue, double disLinePresValue);
+
 	void calcSuperHeatingSpecificWork(double sucLineTempValue, double sucLinePresValue, double disLinePresValue);
 
 // POTENCIA TEORICA COM BASE EM COMPRESSAO ISENTROPICA COM SUPERAQUEC.
@@ -243,7 +243,7 @@ public:
 
 	Constants cte;
 
-	Refrigerant refrigerant;
+	Refrigerant refrig;
 
 
 

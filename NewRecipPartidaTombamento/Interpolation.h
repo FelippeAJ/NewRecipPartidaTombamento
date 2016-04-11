@@ -1,8 +1,11 @@
 #ifndef INTERPOLATION_H
 #define INTERPOLATION_H
 
+#include <iostream>
 #include <cmath>
-#include "Input.h"
+#include <vector>
+
+using namespace std;
 
 class Interpolation
 {

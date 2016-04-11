@@ -1,167 +1,144 @@
 #include "Mechanism.h"
 
-double Mechanism::velocity = 0;
+double Mechanism::vel = 0;
+double Mechanism::theta = 0;
 
 Mechanism::Mechanism()
 {
-	Input mechanismReaderData;
+	POLOIO POLOIOobj("input.dat");
 
-	mechanismReaderData.readMechanismData();
-
-	setMechanism(mechanismReaderData.getMechanismDisplacement());
-
-	setStroke(mechanismReaderData.getMechanismStroke());
-
-	axis.setReversibility(mechanismReaderData.getAxisReversibility());
-
-	axis.setFrequency(mechanismReaderData.getAxisRotation());
-
-	crank.setEccentricity(mechanismReaderData.getCrankEccentricity());
-
-	rod.setLength(mechanismReaderData.getRodLength());
+	mech		=	POLOIOobj.getWord("mechanism_displacement", "left");
+	stroke		=	POLOIOobj.getParamVal("stroke", "left");
+	revers		=	POLOIOobj.getParamVal("reversibility", "left");
+	rot			=	POLOIOobj.getParamVal("rotation", "left");
+	eccent		=	POLOIOobj.getParamVal("eccentricity", "left");
+	rodLength	=	POLOIOobj.getParamVal("rod_length", "left");
+	
+	freq = rot/60;
 }
 
-
-void Mechanism::calcSuperiorDeadPoint()
+void Mechanism::calcSupDeadPt()
 {
-	if(mechanism == "crank_rod")
+	if(mech == "crank_rod")
 	{
-		double A = (rod.getLength() + crank.getEccentricity());
-
-		superiorDeadPoint = sqrt(pow(A,2) - pow( axis.getReversibility(),2));
+		supDeadPt = sqrt(pow(rodLength + eccent,2) - pow(revers,2));
 	}
 	else
-	if(mechanism == "sinusoidal")
+	if(mech == "sinusoidal")
 	{
-		superiorDeadPoint = stroke;
-	}
-	else
-	{
-		cout << "Undeclared Mechanism." << endl;
+		supDeadPt = stroke;
 	}
 }
 
-void Mechanism::calcPosition()
+void Mechanism::calcPos()
 {
-	if(mechanism == "crank_rod")
+	if(mech == "crank_rod")
 	{
-		double A = crank.getEccentricity()*cos(crank.getTheta());
-		double B = crank.getEccentricity()*sin(crank.getTheta());
-		double C = pow(rod.getLength(),2) - pow((B - axis.getReversibility()),2);
+		double A = eccent*cos(theta);
+		double B = eccent*sin(theta);
+		double C = pow(rodLength,2) - pow((B - revers),2);
 
-		position = -A + sqrt(C);
+		pos = -A + sqrt(C);
 	}
 	else
-	if(mechanism == "sinusoidal")
+	if(mech == "sinusoidal")
 	{
-		position = (stroke/2)*sin(crank.getTheta()+3*cte.Pi/2) + (stroke/2);
-	}
-	else
-	{
-		cout << "Undeclared Mechanism." << endl;
+		pos = (stroke/2)*sin(theta+3*cte.Pi/2) + (stroke/2);
 	}
 }
 
-void Mechanism::calcVelocity()
+void Mechanism::calcVel()
 {
-	if(mechanism == "crank_rod")
+	if(mech == "crank_rod")
 	{
-		double A = crank.getEccentricity()*cos(crank.getTheta());
-		double B = crank.getEccentricity()*sin(crank.getTheta());
-		double C = pow(rod.getLength(),2) - pow((B - axis.getReversibility()),2);
+		double A = eccent*cos(theta);
+		double B = eccent*sin(theta);
+		double C = pow(rodLength,2) - pow(B - revers,2);
 
-		velocity = (B - ((B - axis.getReversibility())*A)/sqrt(C))*axis.getVelocity();
+		vel = (B - ((B - revers)*A)/sqrt(C))*shaftVel;
 	}
 	else
-	if(mechanism == "sinusoidal")
+	if(mech == "sinusoidal")
 	{
-		velocity = ((stroke/2)*cos(crank.getTheta()+3*cte.Pi/2))*axis.getVelocity();
-	}
-	else
-	{
-		cout << "Undeclared Mechanism." << endl;
+		vel = ((stroke/2)*cos(theta + 3*cte.Pi/2))*shaftVel;
 	}
 }
 
-void Mechanism::calcVelocityMedia()
+void Mechanism::calcVelMed()
 {	
-	if(mechanism == "crank_rod")
+	if(mech == "crank_rod")
 	{
-		velocityMedia = 4*axis.getFrequency()*crank.getEccentricity();
+		velMed = 4*freq*eccent;
 	}
 	else
-	if(mechanism == "sinusoidal")
+	if(mech == "sinusoidal")
 	{
-		velocityMedia = 2*axis.getFrequency()*stroke;
-	}
-	else
-	{
-		cout << "Undeclared Mechanism." << endl;
+		velMed = 2*freq*stroke;
 	}
 }
 
-void Mechanism::calcGapFrictionFactor(double cylWallTemp, double sucLinePres, double cylBore, double cylPres)
+void Mechanism::calcShaftVel()
 {
-	double diameterRatio = piston.getDiameter()/cylBore;
-
-	double A = log(diameterRatio);
-
-	double B = pow(diameterRatio, 2);
-
-	oil.calcViscosity(cylWallTemp);
-
-	gapFrictionFactor= -( ( ( 2*cte.Pi*oil.getViscosity()*contactLength) / A)*velocity	+  ((cylPres - sucLinePres)/2.0)*cte.Pi*pow((piston.getDiameter()/2),2)*((2.0 * B * A + 1.0 - B)/A ) );
+	Constants cte;
+	shaftVel = 2*cte.Pi*freq;
 }
 
-void Mechanism::calcContactLength()
+void Mechanism::incremTheta(double deltaTheta)
 {
-	contactLength = piston.getHeadLength() + piston.getSkirtLength();
+	theta += deltaTheta;
 }
 
-void Mechanism::setMechanism(string mechanismName)
+double Mechanism::getSupDeadPt()
 {
-	mechanism = mechanismName;
+	return supDeadPt;
 }
 
-void Mechanism::setStroke(double strokeValue)
+double Mechanism::getPos()
 {
-	 stroke = strokeValue;
+	return pos;
 }
 
-string Mechanism::getMechanism()
+double Mechanism::getVel()
 {
-	return mechanism;
+	return vel;
 }
 
-double Mechanism::getStroke()
+double Mechanism::getVelMed()
+{
+	return velMed;
+}
+
+double Mechanism::getShaftVel()
+{
+	return shaftVel;
+}
+
+double Mechanism::getFreq()
+{
+	return freq;
+}
+
+double Mechanism::getEccent()
+{
+	return eccent;
+}
+
+double  Mechanism::getTheta()
+{
+	return theta;
+}
+
+double  Mechanism::getStroke()
 {
 	return stroke;
 }
 
-double Mechanism::getGapFrictionFactor()
+string Mechanism::getMech()
 {
-	return gapFrictionFactor;
+	return mech;
 }
 
-double Mechanism::getSuperiorDeadPoint()
-{
-	return superiorDeadPoint;
-}
 
-double Mechanism::getPosition()
-{
-	return position;
-}
-
-double Mechanism::getVelocity()
-{
-	return velocity;
-}
-
-double Mechanism::getVelocityMedia()
-{
-	return velocityMedia;
-}
 
 
 

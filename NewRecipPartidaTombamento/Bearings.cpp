@@ -2,45 +2,35 @@
 
 Bearings::Bearings()
 {
-	Input bearingReaderData;
+	POLOIO POLOIOobj("input.dat");
 
-	bearingReaderData.readBearingsData();
+	expTemp				=	POLOIOobj.getParamVal("bearings", "left") +273.15;
+	los					  =	POLOIOobj.getParamVal("loss", "left");
+	avaliationTemperature = POLOIOobj.getParamVal("avaliation_temperature", "left");
 
-	setLoses(bearingReaderData.getBearingsLoses());
-
-	setAvaliationTemperature(bearingReaderData.getBearingsAvaliationTemperature());
 }
 
-void Bearings::setLoses(double losesValue)
-{
-	loses = losesValue;
-}
 
-void Bearings::setAvaliationTemperature(double avaliationTemperatureValue)
-{
-	avaliationTemperature = avaliationTemperatureValue;
-}
-
-void Bearings::calcBearingsLoses()
+void Bearings::calcBearingsLos(double motorExpTemp)
 {	
 	double engineViscosity;
 
-	oil.calcViscosity(expTemperature.getMotorTemp());
+	oilObj.calcViscosity(motorExpTemp);
 
-	engineViscosity = oil.getViscosity();
+	engineViscosity = oilObj.getViscosity();
 
 	double bearingViscosity;
 
-	oil.calcViscosity(avaliationTemperature);
+	oilObj.calcViscosity(avaliationTemperature);
 
-	bearingViscosity = oil.getViscosity();
+	bearingViscosity = oilObj.getViscosity();
 
-	bearingsLoses = loses*engineViscosity/bearingViscosity;
+	bearingsLos = los*engineViscosity/bearingViscosity;
 }
 
-double Bearings::getLoses()
+double Bearings::getLos()
 {
-	return loses;
+	return los;
 }
 
 double Bearings::getAvaliationTemperature()
@@ -48,7 +38,7 @@ double Bearings::getAvaliationTemperature()
 	return avaliationTemperature;
 }
 
-double Bearings::getBearingsLoses()
+double Bearings::getBearingsLos()
 {
-	return bearingsLoses;
+	return bearingsLos;
 }

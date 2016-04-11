@@ -1,510 +1,337 @@
 #include "Compressor.h"
 
 Compressor::Compressor()
-:iterative(0), n(1), contador(0), plotContador(0), multiplo(0)
 {
+	plotCont = 0;
+	multip =	0;
+	it = 0; 
+	cont = 0;
+	n = 1;
 
 }
 
-
-
-void Compressor::simulateCompressor()
+void Compressor::silmulComp()
 {
-	int sucBackflowCte = 0;
+	ofstream expData;
+	expData.open("NewRecip_Results.dat", ios::out);
 
-	int stickingForceIndice = -1;
+	ofstream outData;
+	outData.open("NewRecip_Output.dat", ios::out);
 
-	ofstream exportData;
-	exportData.open("NewRecip_Results.dat", ios::out);
+	sucSystObj.orifFact.creatOrifice();
+	sucSystObj.valveFact.creatValve();
 
-	ofstream outputData;
-	outputData.open("NewRecip_Output.dat", ios::out);
-	
-	calcPropertiesOfComponents();
+	disSystObj.orifFact.creatOrifice();
+	disSystObj.valveFact.creatValve();
 
-	calcPropertiesOfMechanism();
+	sucSystObj.calcSucInicProp(systObj.getEvapTemp());
+	disSystObj.calcDisInicProp(systObj.getCondTemp());
 
-	calcSimulationParameters();
-	
-	compressionChamberObj.calcInicialProperties(mechanism, sucChamber.refrigerant.getPressure()) ;
+	systObj.calcEvapHDif();
 
-	multiploOrificesObj.creatMultipleOrifices();
+	calcMechanIniProp();
 
-	multiploOrificesObj.calcInicialProperties(sucChamber.refrigerant.getSpecificHeatsRatio(), disChamber.refrigerant.getSpecificHeatsRatio());
+	compChambObj.calcInicProp(mechanObj, sucSystObj.sucChambPress, sucSystObj.sucChambRho, sucSystObj.sucChambExpTemp);
 
-	while(mechanism.crank.getTheta() < simulParameters.getFinalTheta())
+	sucSystObj.orifFact.orifice[0].calcSpecHeatRatMed(sucSystObj.sucChambSpecHeatRat, disSystObj.disChambSpecHeatRat);
+	disSystObj.orifFact.orifice[1].calcSpecHeatRatMed(sucSystObj.sucChambSpecHeatRat, disSystObj.disChambSpecHeatRat);
+
+	sucSystObj.orifFact.orifice[0].calcCritPress();
+	disSystObj.orifFact.orifice[1].calcCritPress();
+
+	calcSimulPar();
+
+	while(mechanObj.getTheta() < simulParObj.getFinTheta())
 	{
-		mechanism.calcPosition();
-		mechanism.calcVelocity();
+		mechanObj.calcPos();
+		mechanObj.calcVel();
+
+		compChambObj.calcTemp(mechanObj, sucSystObj.sucChambH, disSystObj.disChambH, sucSystObj,disSystObj, simulParObj.getTimeStep(), leakObj.getMassFl());
+		compChambObj.refrig.calcPress();
+
+	    sucSystObj.execSimulSucMuffler(simulParObj.getDeltaTheta(), mechanObj.getShaftVel(), compChambObj.refrig.getTemp(), systObj.getIntEnvTemp(), sucSystObj.orifFact.orifice[0].getMassFl());
+		//disSystObj.execSimulDisMuffler(simulParObj.getDeltaTheta(), mechanObj.getShaftVel(), compChambObj.refrig.getTemp(), systObj.getIntEnvTemp(), disSystObj.orifFact.orifice[1].getMassFl());
+
+		compChambObj.calcGapFricFact(sucSystObj.sucLinePress, mechanObj.getVel());
 		
-		compressionChamberObj.calcTemperature(mechanism, sucChamber.refrigerant.getEnthalpy(), disChamber.refrigerant.getEnthalpy(), multiploOrificesObj,simulParameters.getTimeStep());  
-		compressionChamberObj.cyl.refrigerant.calcPressure();
+		sucSystObj.orifFact.orifice[0].setTotSucFl(0);
+		sucSystObj.orifFact.orifice[0].setTotSucBackf(0);
 
-		mechanism.calcGapFrictionFactor(expTemp.getCylinderWallTemp(), sucLine.refrigerant.getPressure(), compressionChamberObj.cyl.getBore(), compressionChamberObj.cyl.refrigerant.getPressure());
+		disSystObj.orifFact.orifice[1].setTotDisFl(0);
+		disSystObj.orifFact.orifice[1].setTotDisBackf(0);
 
-		multiploOrificesObj.orificesSet.setTotalSucFlux(0);
-		multiploOrificesObj.orificesSet.setTotalSucBackflow(0);
-		multiploOrificesObj.orificesSet.setTotalDisFlux(0);
-		multiploOrificesObj.orificesSet.setTotalDisBackflow(0);
+		calcLeak();
 
-		compressionChamberObj.calcLeak(mechanism.getPosition(), sucLine.refrigerant.getPressure());
+		sucSystObj.calcSucValveDyn(compChambObj.refrig.getPress());
+		disSystObj.calcDisValveDyn(compChambObj.refrig.getPress());
 
-		
-		if(multiploOrificesObj.dynSystemFact.dynamicSystem[1].getDisplacement() > 0)
+		sucSystObj.calcSucOrifMassFl(compChambObj.refrig.getPress(), compChambObj.refrig.getTemp());
+		disSystObj.calcDisOrifMassFl(compChambObj.refrig.getPress(), compChambObj.refrig.getTemp());
+
+		compChambObj.calcMassBal(sucSystObj.orifFact.orifice[0].getTotSucMassFl(), disSystObj.orifFact.orifice[1].getTotDisMassFl(), leakObj.getMassFl(), simulParObj.getTimeStep());
+
+		sucSystObj.orifFact.orifice[0].setTotSucMassFl(0);
+		disSystObj.orifFact.orifice[1].setTotDisMassFl(0);
+
+		if(mechanObj.getTheta() >= simulParObj.getLastTheta())
 		{
-			stickingForceIndice = 1;
-		}
-
-		
-		if(multiploOrificesObj.dynSystemFact.dynamicSystem[0].getDisplacement() > 0)
-		{
-			stickingForceIndice = 0;
-		}
-		
-
-		multiploOrificesObj.calcValveDynamic(compressionChamberObj.cyl.refrigerant.getPressure(), sucChamber, disChamber, stickingForceIndice);
-		
-		
-		multiploOrificesObj.calcMassFlow(compressionChamberObj.cyl.refrigerant.getPressure(), compressionChamberObj.cyl.refrigerant.getTemperature(), sucChamber, disChamber);
-
-		
-
-		compressionChamberObj.cyl.calcMassBalance(multiploOrificesObj.orificesSet.getTotalSucMassFlow(), multiploOrificesObj.orificesSet.getTotalDisMassFlow() , compressionChamberObj.leak.getMassFlow(), simulParameters.getTimeStep());
-	
-		multiploOrificesObj.orificesSet.setTotalSucMassFlow(0);
-		multiploOrificesObj.orificesSet.setTotalDisMassFlow(0);
-
-		if(mechanism.crank.getTheta() >= simulParameters.getLastTheta())
-		{
-			for(int j = 0; j < multiploOrificesObj.getNumberOfOrifices(); j++)
+			if(sucSystObj.valveFact.valve[0].getDisp() <= 0)
 			{
-				if(multiploOrificesObj.dynSystemFact.dynamicSystem[j].getDisplacement() <= 0)
-				{
-					multiploOrificesObj.orificeFact.orifice[j].setMassFlow(0);
-				}
-
-				multiploOrificesObj.orificeFact.orifice[j].calcMassSum(simulParameters.getTimeStep());
+				sucSystObj.orifFact.orifice[0].setMassFl(0);
 			}
 
+			if(disSystObj.valveFact.valve[1].getDisp() <= 0)
+			{
+				disSystObj.orifFact.orifice[1].setMassFl(0);
+			}
 
-			compressionChamberObj.leak.calcMassSum(simulParameters.getTimeStep());
+			leakObj.calcMassSum(simulParObj.getTimeStep());
 
 			calcWork();
 
-			calcEnthalpyFluxInCompressionChamber();
+			postProcObj.calcGapPistonCylinderPotencyLose(compChambObj.getGapFricFact() , mechanObj.getVel());
 
-			postProcessing.calcGapPistonCylinderPotencyLose(mechanism.getGapFrictionFactor(), mechanism.getVelocity());
+			expResult(expData);
 
-			exportResults(exportData);
-
-			contador++;
-
-			
+			cont++;
 		}
 
-		mechanism.crank.incrementTheta(simulParameters.getDeltaTheta());
+		mechanObj.incremTheta(simulParObj.getDeltaTheta());
+
 	}
 
-	executePostProcessing(outputData);
-
-	calcEnthalpyFluxOfComponents();
-
-	calcInputOutputEnergyRateSumOfComponents();
-
-	mechanism.crank.theta = 0;
-	//cout << "Ef. Eletrica = " << postProcessing.eletricEfficiency*100 << endl;
+	mechanObj.theta = 0;
 }
 
-void Compressor::calcPropertiesOfComponents()
+void Compressor::calcMechanIniProp()
 {
-	sucLine.calcProperties(expTemp.getEvaporationTemp(), expTemp.getSucLineTemp());
-
-	sucMuffler.calcProperties(expTemp.getSucChamberTemp(), sucLine.refrigerant.getPressure());
-
-	internalEnvironment.calcProperties(expTemp.getInternalEnvironment(), sucLine.refrigerant.getPressure());
-
-	sucChamber.calcProperties(expTemp.getEvaporationTemp(), expTemp.getSucChamberTemp());
-	sucChamber.refrigerant.calcSpecificHeatsRatio();
-
-	disChamber.calcProperties(expTemp.getCondesationTemp(), expTemp.getDisChamberTemp());
-	disChamber.refrigerant.calcSpecificHeatsRatio();
-
-	disMuffler.calcProperties(expTemp.getCondesationTemp(), expTemp.getDischargeMuffler());
-
-	bundy.calcProperties(expTemp.getCondesationTemp(), expTemp.getDisLineTemp());
-
-	disLine.calcProperties(expTemp.getCondesationTemp(), expTemp.getDisLineTemp());
-
-	evaporator.calcEnthlapyDiference(expTemp.getSubcoolingTemp(), expTemp.getSuperheatingTemp(), expTemp.getEvaporationTemp());
+	mechanObj.calcShaftVel();
+	mechanObj.calcSupDeadPt();
+	mechanObj.calcVelMed();
+	mechanObj.calcPos();
 }
 
-void Compressor::calcPropertiesOfMechanism()
+void Compressor::calcLeak()
 {
-	mechanism.axis.calcVelocity();
-	mechanism.calcSuperiorDeadPoint();
-	mechanism.calcVelocityMedia();
-	mechanism.calcPosition();
-	mechanism.calcContactLength();
+	if(compChambObj.getShape() == "conic")
+	{
+		compChambObj.calcDistBottPistTop(mechanObj.getPos());
+		compChambObj.calcDistBottPistPin();
+
+		compChambObj.getGapPistTop();
+		compChambObj.getGapPistPin();
+		compChambObj.getGapPistBott();
+
+		compChambObj.calcTopDiam();
+		compChambObj.calcBottDiam();
+	}
+
+	compChambObj.calcLeakArea();
+	leakObj.calcVel(compChambObj, sucSystObj.sucLinePress, compChambObj.refrig.getVisc(), mechanObj.getVel() );
+	leakObj.calcMassFl(compChambObj.refrig.getRho(), compChambObj);
 }
 
-void Compressor::calcSimulationParameters()
+void Compressor::calcSimulPar()
 {
-	simulParameters.calcFinalTheta();
-	simulParameters.calcTimeStep(mechanism.axis.getVelocity());
-	simulParameters.calcLastTheta();
+	simulParObj.calcFinTheta();
+	simulParObj.calcTimeStep(mechanObj.getShaftVel());
+	simulParObj.calcLastTheta();
+
+
 }
 
 void Compressor::calcWork()
 {
-	work.setInicialProperties(compressionChamberObj.cyl.refrigerant.getPressure(), compressionChamberObj.cyl.getVolume());
-	work.setWorkPres(compressionChamberObj.cyl.refrigerant.getPressure());
-	work.setWorkVol(compressionChamberObj.cyl.getVolume());
-	work.calcWorkMediaPres();
-	work.calcRefrigerantWork();
-	work.calcSucValveWork(sucLine.refrigerant.getPressure(), sucChamber.refrigerant.getPressure());
-	work.calcSucChamberWork(sucLine.refrigerant.getPressure(), sucChamber.refrigerant.getPressure());
-	work.calcDisValveWork(disLine.refrigerant.getPressure(), disChamber.refrigerant.getPressure());
-	work.calcDisChamberWork(disLine.refrigerant.getPressure(), disChamber.refrigerant.getPressure());
-	work.calcLeakWork(compressionChamberObj.cyl.refrigerant.getRho(), compressionChamberObj.cyl.refrigerant.getTemperature(), compressionChamberObj.leak.getMassFlow(), simulParameters.getTimeStep());
-	work.setOldWorkPres(compressionChamberObj.cyl.refrigerant.getPressure());
-	work.setOldWorkVol(compressionChamberObj.cyl.getVolume());
+	workObj.setInicialProperties(compChambObj.refrig.getPress(), compChambObj.getVol());
+	workObj.setWorkPres(compChambObj.refrig.getPress());
+	workObj.setWorkVol(compChambObj.getVol());
+	workObj.calcWorkMediaPres();
+	workObj.calcRefrigerantWork();
+	workObj.calcSucValveWork(sucSystObj.sucLinePress, sucSystObj.sucChambPress);
+	workObj.calcSucChamberWork(sucSystObj.sucLinePress, sucSystObj.sucChambPress);
+
+	workObj.calcDisValveWork(disSystObj.disLinePress, disSystObj.disChambPress);
+	workObj.calcDisChamberWork(disSystObj.disLinePress, disSystObj.disChambPress);
+
+	workObj.calcLeakWork(compChambObj.refrig.getRho(), compChambObj.refrig.getTemp(), leakObj.getMassFl(), simulParObj.getTimeStep());
+	workObj.setOldWorkPres(compChambObj.refrig.getPress());
+	workObj.setOldWorkVol(compChambObj.getVol());
 }
 
-void Compressor::calcEnthalpyFluxInCompressionChamber()
-{
-	compressionChamberObj.cyl.calcEnthalpyFluxToInternalEnvironment(compressionChamberObj.leak.getMassFlow(), simulParameters.getTimeStep());
-	
-	for(int i = 0; i < multiploOrificesObj.getNumberOfOrifices(); i++)
-	{
-		if(multiploOrificesObj.dynSystemFact.dynamicSystem[i].getDisplacement() > 0)
-		{
-			if(multiploOrificesObj.orificeFact.orifice[i].getDirection() == "suction")
-			{
-				compressionChamberObj.cyl.calcEnthalpyFluxToSuctionChamber(multiploOrificesObj.orificeFact.orifice[i].getBackFlow(), simulParameters.getTimeStep()); 
-			}
-			else
-			{
-				compressionChamberObj.cyl.calcEnthalpyFluxToDischargeChamber(multiploOrificesObj.orificeFact.orifice[i].getFlux(), simulParameters.getTimeStep()); 
-			}
-		}
-	}
-}
-
-void Compressor::calcEnthalpyFluxOfComponents()
-{
-	for(int i = 0; i < multiploOrificesObj.getNumberOfOrifices(); i++)
-	{
-		if(multiploOrificesObj.orificeFact.orifice[i].getDirection() == "suction")
-		{	
-			sucChamber.calcEnthalpyFluxToCylinder(multiploOrificesObj.orificeFact.orifice[i].getMassSumFlux(), mechanism.axis.getFrequency());
-		}
-		else
-		{
-			disChamber.calcEnthalpyFluxToCylinder(multiploOrificesObj.orificeFact.orifice[i].getMassSumBackflow(), mechanism.axis.getFrequency());
-		}
-	}
-	
-	compressionChamberObj.cyl.calcEnthalpyFluxToInternalEnvironmentAverage(compressionChamberObj.cyl.getEnthalpyFluxToInternalEnvironment(), mechanism.axis.getFrequency());
-	compressionChamberObj.cyl.calcEnthalpyFluxToDischargeChamberAverage(compressionChamberObj.cyl.getEnthalpyFluxToDischargeChamber(), mechanism.axis.getFrequency());
-	compressionChamberObj.cyl.calcEnthalpyFluxToSuctionChamberAverage(compressionChamberObj.cyl.getEnthalpyFluxToSuctionChamber(), mechanism.axis.getFrequency());
-	sucLine.calcEnthalpyFluxtoSuctionMuffler(postProcessing.massFlowDischarged, simulParameters.getDirectSuctionFactor());
-	sucLine.calcEnthalpyFluxtoInternalEnvironment(postProcessing.massFlowDischarged);
-	disLine.calcEnthalpyFluxToOutlet(postProcessing.massFlowDischarged);
-	disChamber.calcEnthalpyFluxToDischargeMuffler(postProcessing.massFlowDischarged);
-	disMuffler.calcEnthalpyFluxtoBundy(postProcessing.massFlowDischarged);
-	bundy.calcEnthalpyFluxToDischargeLine(postProcessing.massFlowDischarged);
-	internalEnvironment.calcEnthalpyFluxToSuctionMuffler(postProcessing.leakLoses, postProcessing.massFlowDischarged, simulParameters.getDirectSuctionFactor());
-	sucMuffler.calcEnthalpyFluxToInternalEnvironment(compressionChamberObj.leak.getMassSumBackFlow(), mechanism.axis.getFrequency());
-	internalEnvironment.calcEnthalpyFluxToCylinder(compressionChamberObj.leak.getMassSumBackFlow(), mechanism.axis.getFrequency());
-}
-
-void Compressor::calcInputOutputEnergyRateSumOfComponents()
-{
-
-	motor.UAobj.setInputEnergyRateSum(0);
-	motor.UAobj.setOutputEnergyRateSum(0);
-	motor.calcHeat(postProcessing.consumption);
-	motor.UAobj.calcInputEnergyRateSum(1, motor.getHeat());
-	
-	compressionChamberObj.cyl.UAobj.setInputEnergyRateSum(0);
-	compressionChamberObj.cyl.UAobj.setOutputEnergyRateSum(0);
-	//compressionChamberObj.cyl.UAobj.calcInputEnergyRateSum(6,sucChamber.getEnthalpyFluxToCylinder(), disChamber.getEnthalpyFluxToCylinder(), internalEnvironment.getEnthalpyFluxToCylinder(), postProcessing.indicadetPotency, postProcessing.gapPistonCylinderPotencyLose/contador, bearings.getBearingsLoses());
-	compressionChamberObj.cyl.UAobj.calcInputEnergyRateSum(6,sucChamber.getEnthalpyFluxToCylinder(), disChamber.getEnthalpyFluxToCylinder(), internalEnvironment.getEnthalpyFluxToCylinder(), postProcessing.indicadetPotency, postProcessing.gapPistonCylinderPotencyLose/contador, bearings.getLoses());
-	//compressionChamberObj.cyl.UAobj.calcInputEnergyRateSum(5,sucChamber.getEnthalpyFluxToCylinder(), disChamber.getEnthalpyFluxToCylinder(), internalEnvironment.getEnthalpyFluxToCylinder(), postProcessing.indicadetPotency, postProcessing.gapPistonCylinderPotencyLose/contador);
-	compressionChamberObj.cyl.UAobj.calcOutputEnergyRateSum(3, compressionChamberObj.cyl.getEnthalpyFluxToDischargeChamberAverage(), compressionChamberObj.cyl.getEnthalpyFluxToSuctionChamberAverage(), compressionChamberObj.cyl.getEnthalpyFluxToInternalEnvironmentAverage());
-
-	sucMuffler.UAobj.setInputEnergyRateSum(0);
-	sucMuffler.UAobj.setOutputEnergyRateSum(0);
-	sucMuffler.UAobj.calcInputEnergyRateSum(3, sucLine.getEnthalpyFluxtoSuctionMuffler(), compressionChamberObj.cyl.getEnthalpyFluxToSuctionChamberAverage(), internalEnvironment.getEnthalpyFluxToSuctionMuffler());
-	sucMuffler.UAobj.calcOutputEnergyRateSum(2, sucChamber.getEnthalpyFluxToCylinder(),sucMuffler.getEnthalpyFluxToInternalEnvironment()); 
-
-	disMuffler.UAobj.setInputEnergyRateSum(0);
-	disMuffler.UAobj.setOutputEnergyRateSum(0);
-	disMuffler.UAobj.calcInputEnergyRateSum(1, disChamber.getEnthalpyFluxToDischargeMuffler());
-	disMuffler.UAobj.calcOutputEnergyRateSum(1, disMuffler.getEnthalpyFluxtoBundy()); 
-
-	disChamber.UAobj.setInputEnergyRateSum(0);
-	disChamber.UAobj.setOutputEnergyRateSum(0);
-	disChamber.UAobj.calcInputEnergyRateSum(1, compressionChamberObj.cyl.getEnthalpyFluxToDischargeChamberAverage()); 
-	disChamber.UAobj.calcOutputEnergyRateSum(2, disChamber.getEnthalpyFluxToDischargeMuffler(), disChamber.getEnthalpyFluxToCylinder());
-
-	bundy.UAobj.setInputEnergyRateSum(0);
-	bundy.UAobj.setOutputEnergyRateSum(0);
-	bundy.UAobj.calcInputEnergyRateSum(1, disMuffler.getEnthalpyFluxtoBundy());
-	bundy.UAobj.calcOutputEnergyRateSum(1, bundy.getEnthalpyFluxToDischargeLine());
-
-
-	internalEnvironment.UAobj.setInputEnergyRateSum(0);
-	internalEnvironment.UAobj.setOutputEnergyRateSum(0);
-
-	double calcEnergyRateDifferenceSucMuffler = 0;
-	double calcEnergyRateDifferenceCompChamber = 0;
-	double calcEnergyRateDifferenceDisChamber = 0;
-	double calcEnergyRateDifferenceDisMuffler = 0;
-	double calcEnergyRateDifferenceBundy = 0;
-	double calcEnergyRateDifferenceMotor = 0;
-	double calcEnergyRateDifferenceInternalEnvironment = 0;
-
-	calcEnergyRateDifferenceSucMuffler = sucMuffler.UAobj.getOutputEnergyRateSum() - sucMuffler.UAobj.getInputEnergyRateSum();
-	calcEnergyRateDifferenceCompChamber = compressionChamberObj.cyl.UAobj.getInputEnergyRateSum() - compressionChamberObj.cyl.UAobj.getOutputEnergyRateSum();
-	calcEnergyRateDifferenceDisChamber = disChamber.UAobj.getInputEnergyRateSum() - disChamber.UAobj.getOutputEnergyRateSum();
-	calcEnergyRateDifferenceDisMuffler = disMuffler.UAobj.getInputEnergyRateSum() - disMuffler.UAobj.getOutputEnergyRateSum();
-	calcEnergyRateDifferenceBundy = bundy.UAobj.getInputEnergyRateSum() - bundy.UAobj.getOutputEnergyRateSum();
-	calcEnergyRateDifferenceMotor = motor.UAobj.getInputEnergyRateSum() - motor.UAobj.getOutputEnergyRateSum();
-
-	internalEnvironment.UAobj.calcInputEnergyRateSum(7, calcEnergyRateDifferenceCompChamber, calcEnergyRateDifferenceDisChamber, calcEnergyRateDifferenceDisMuffler, calcEnergyRateDifferenceBundy, calcEnergyRateDifferenceMotor, sucLine.getEnthalpyFluxtoInternalEnvironment(), compressionChamberObj.cyl.getEnthalpyFluxToInternalEnvironmentAverage());
-	internalEnvironment.UAobj.calcOutputEnergyRateSum(3, calcEnergyRateDifferenceSucMuffler, sucLine.getEnthalpyFluxtoSuctionMuffler(), internalEnvironment.getEnthalpyFluxToSuctionMuffler());
-	
-	calcEnergyRateDifferenceInternalEnvironment = internalEnvironment.UAobj.getInputEnergyRateSum() - internalEnvironment.UAobj.getOutputEnergyRateSum();
-
-	//internalEnvironment.UAobj.calcInputEnergyRateSum(1,externalEnvironment.heatTransferRateObj.getHeatTransferRate());
-
-	externalEnvironment.UAobj.setInputEnergyRateSum(0);
-	//externalEnvironment.UAobj.setOutputEnergyRateSum(0);
-	externalEnvironment.UAobj.calcInputEnergyRateSum(1, calcEnergyRateDifferenceInternalEnvironment);
-	//externalEnvironment.UAobj.calcOutputEnergyRateSum(1, bundy.getEnthalpyFluxToDischargeLine());
-	//externalEnvironment.UAobj.calcUA(expTemp.getShell(), expTemp.getExternalEnvironment());
-	//externalEnvironment.heatTransferRateObj.calcHeatTransferRate(externalEnvironment.UAobj.getUA(), expTemp.getShell(), expTemp.getExternalEnvironment());
-
-}
-
-
-void Compressor::exportResults(ofstream &exportData)
+void Compressor::expResult(ofstream &expData)
 {
 	double T, Y;
 
-	/*T = 1.0*cte.Pi/180;
-
-	Y = T/simulParameters.getDeltaTheta();
-
-	cout << plotContador/Y << endl;
-	if( plotContador/Y < 1E-3)
-	{
-		cout << mechanism.crank.getTheta()*180/cte.Pi;
-	}
-
-	plotContador++;*/
-	
-
 	T = 0.001745;
 
-	Y  = T/simulParameters.getDeltaTheta(); 
+	Y  = T/simulParObj.getDeltaTheta(); 
 	 
-
-	/*if( multiplo*plotContador - multiplo*Y < 0.001) 
+	if( multip*plotCont - multip*Y < 0.0000001) 
 	{
-		cout << mechanism.crank.getTheta() << endl;
-
-		plotContador = 0;
-		multiplo++;
-	}
-
-	plotContador++;*/
-
-	//Constants cte;
-
-	//if((mechanism.crank.getTheta() - (n*simulParameters.getFinalTheta()/360 - 0.001)) > 0.000001)
-	if( multiplo*plotContador - multiplo*Y < 0.0000001) 
-	{
-		if(iterative == 0)
+		if(it == 0)
 		{
-			exportData << "Angulo     ";
-			exportData << "Posicao     ";
-			exportData << "Volume      ";
-			exportData << "Posicao_Valvula_Succao      ";
-			exportData << "Velocidade_Valvula_Succao      ";
-			exportData << "Vazao_Massica_Valvula_Succao      ";
-			exportData << "Posicao_Valvula_Descarga      ";
-			exportData << "Velocidade_Valvula_Descarga      ";
-			exportData << "Vazao_Massica_Valvula_Descarga      ";
-			exportData << "Vazao_Massica_Folga_Pistao_Cilindro      ";
-			exportData << "Pressao_Cilindro      ";
-			exportData << "Pressao_Linha_Succao      ";
-			exportData << "Pressao_Linha_Descarga      " ;
-			exportData << "Pressao_Camara_Succao      ";
-			exportData << "Pressao_Camara_Descarga      ";
-			exportData << "Temperatura_Cilindro      " << endl;
+			expData << "Angulo         ";
+			expData << "Posicao     ";
+			expData << "Volume      ";
+			expData << "Posicao_Valvula_Succao      ";
+			expData << "Velocidade_Valvula_Succao      ";
+			expData << "Vazao_Massica_Valvula_Succao      ";
+			expData << "Posicao_Valvula_Descarga      ";
+			expData << "Velocidade_Valvula_Descarga      ";
+			expData << "Vazao_Massica_Valvula_Descarga      ";
+			expData << "Vazao_Massica_Folga_Pistao_Cilindro      ";
+			expData << "Pressao_Cilindro      ";
+			expData << "Pressao_Linha_Succao      ";
+			expData << "Pressao_Linha_Descarga      " ;
+			expData << "Pressao_Camara_Succao      ";
+			expData << "Pressao_Camara_Descarga      ";
+			expData << "Temperatura_Cilindro      " << endl;
 
-			iterative++;
+			it++;
 		}
 
-		exportData << (mechanism.crank.getTheta() - (simulParameters.getCyclesNumber() -1)*2*cte.Pi )*180/cte.Pi << setw(4) << "";
-		exportData << mechanism.getPosition() << setw(13);
-		exportData << compressionChamberObj.cyl.getVolume()*10E5 <<  setw(19);
+		expData << (mechanObj.getTheta() - (simulParObj.getCyclesNum() -1)*2*ct.Pi )*180/ct.Pi << setw(8) << "";
+		expData << mechanObj.getPos() << setw(13);
+		expData << compChambObj.getVol()*10E5 <<  setw(19);
 
-		for(int i = 0; i < multiploOrificesObj.getNumberOfOrifices(); i++)
-		{
-			exportData << multiploOrificesObj.dynSystemFact.dynamicSystem[i].getDisplacement()*1000 << setw(30);
-			exportData << multiploOrificesObj.dynSystemFact.dynamicSystem[i].getVelocity() << setw(33);
-			exportData << multiploOrificesObj.orificeFact.orifice[i].getMassFlow()*1E+3 << setw(31);
-		}
+	
+		expData << sucSystObj.valveFact.valve[0].getDisp()*1000	<< setw(30);
+		expData << sucSystObj.valveFact.valve[0].getVel() << setw(33);
+		expData << sucSystObj.orifFact.orifice[0].getMassFl()*1E+3 << setw(31);
 
-		exportData << "               ";
+		expData << disSystObj.valveFact.valve[1].getDisp()*1000	<< setw(30);
+		expData << disSystObj.valveFact.valve[1].getVel() << setw(33);
+		expData << disSystObj.orifFact.orifice[1].getMassFl()*1E+3 << setw(31);
+	
+
+		expData << "               ";
 		
-		exportData << compressionChamberObj.leak.getMassFlow()*1E+3 << setw(33);
-		exportData << compressionChamberObj.cyl.refrigerant.getPressure()/100000 << setw(24);
-		exportData << sucLine.refrigerant.getPressure()/100000  << setw(27);
-		exportData << disLine.refrigerant.getPressure()/100000  << setw(27);
-		exportData << sucChamber.refrigerant.getPressure()/100000  << setw(27);
-		exportData << disChamber.refrigerant.getPressure()/100000  << setw(30);
-		exportData << compressionChamberObj.cyl.refrigerant.getTemperature() - 273.15  << setw(30);
-		exportData << work.sucValveWork*1000  << setw(30);
-		exportData << work.disValveWork*1000;
+		expData << leakObj.getMassFl()*1E+3 << setw(33);
+		expData << compChambObj.refrig.getPress()/100000 << setw(24);
+		expData << sucSystObj.sucLinePress/100000  << setw(27);
+		expData << disSystObj.disLinePress/100000  << setw(27);
+		expData << sucSystObj.sucChambPress/100000  << setw(27);
 
+		expData << disSystObj.disChambPress/100000  << setw(22);
+	
+		expData << compChambObj.refrig.getTemp() - 273.15;
 
-		exportData << endl;
+		expData << endl;
 		++n;
 
-		plotContador = 0;
-		multiplo++;
+		plotCont = 0;
+		multip++;
 	}
 
-	plotContador++;
+	plotCont++;
 
 }
 
-
-
-
-
-void Compressor::executePostProcessing(ofstream &outputData)
+void Compressor::execPostProc(ofstream &outData)
 {
-	POLOIO POLOOobj("input.dat");
+	//Suc
+	postProcObj.calcMassSuctioned(sucSystObj.orifFact.orifice[0].getMassSumFl(), sucSystObj.orifFact.orifice[0].getMassSumBackf());
+	postProcObj.calcSuctionRefluxLoses(sucSystObj.orifFact.orifice[0].getMassSumBackf(), mechanObj.getFreq());
 
-	/*for(int i = 0; i < multiploOrificesObj.getNumberOfOrifices(); i++)
-	{
-		if(multiploOrificesObj.orificeFact.orifice[i].getDirection() == "suction")
-		{	
-			postProcessing.calcMassSuctioned(multiploOrificesObj.orificeFact.orifice[i].getMassSumFlux(), multiploOrificesObj.orificeFact.orifice[i].getMassSumBackflow());
-			postProcessing.calcSuctionRefluxLoses(multiploOrificesObj.orificeFact.orifice[i].getMassSumBackflow(), mechanism.axis.getFrequency());
-		}
-		else
-		{
-			postProcessing.calcMassDischarged(multiploOrificesObj.orificeFact.orifice[i].getMassSumFlux(), multiploOrificesObj.orificeFact.orifice[i].getMassSumBackflow());
-			postProcessing.calcDischargeRefluxLoses(multiploOrificesObj.orificeFact.orifice[i].getMassSumBackflow(), mechanism.axis.getFrequency());
-		}
-	}*/
+	//Dis
+	postProcObj.calcMassDischarged(disSystObj.orifFact.orifice[1].getMassSumFl(), disSystObj.orifFact.orifice[1].getMassSumBackf());
+	postProcObj.calcDischargeRefluxLoses(disSystObj.orifFact.orifice[1].getMassSumBackf(), mechanObj.getFreq());
 
-
-		
-	postProcessing.calcMassSuctioned(multiploOrificesObj.orificeFact.orifice[0].getMassSumFlux(), multiploOrificesObj.orificeFact.orifice[0].getMassSumBackflow());
-	postProcessing.calcSuctionRefluxLoses(multiploOrificesObj.orificeFact.orifice[0].getMassSumBackflow(), mechanism.axis.getFrequency());
+	postProcObj.calcIdealMassDischarged(compChambObj.getDispVol(), sucSystObj.sucLineRho);
+	postProcObj.calcMassFlowDischarged(mechanObj.getFreq());
+	postProcObj.calcSuperheatingLoses(sucSystObj.sucLineRho, sucSystObj.sucChambRho);
+	postProcObj.calcIdealMassSuctioned(mechanObj.getFreq());
+	postProcObj.calcIdealMassFlow(mechanObj.getFreq());
+	postProcObj.calcIdealMassFlowSuctioned(mechanObj.getFreq());
+	postProcObj.calcMassFlowSuctioned(mechanObj.getFreq());
+	postProcObj.calcSuctionRestrictionLoses();
+	postProcObj.calcSuctionTotalLoses();
+	postProcObj.calcLeakLoses(leakObj.getMassSumFl(), mechanObj.getFreq());
+	postProcObj.calcIdealMassFlowDischarged(mechanObj.getFreq());
+	postProcObj.calcRefrigerationCapacity(systObj.getEvapHDif());
+	postProcObj.calcMassFlowTotalLoses();
+	postProcObj.calcDeadVolumePolitropicLoses(disSystObj.disChambPress, sucSystObj.sucChambPress, sucSystObj.sucChambRho, disSystObj.disChambRho, compChambObj.getDeadVol(), disSystObj.disLinePress, sucSystObj.sucLinePress, mechanObj.getFreq());
+	postProcObj.calcDischargeRestrictionLoses();
+	postProcObj.calcDischargeTotalLoses();
+	postProcObj.calcAnotherLoses();
+	bearObj.calcBearingsLos(motObj.expTemp);
+	postProcObj.calcTransmissionPotencyLose(bearObj.getBearingsLos(), cont);
 	
-	postProcessing.calcMassDischarged(multiploOrificesObj.orificeFact.orifice[1].getMassSumFlux(), multiploOrificesObj.orificeFact.orifice[1].getMassSumBackflow());
-	postProcessing.calcDischargeRefluxLoses(multiploOrificesObj.orificeFact.orifice[1].getMassSumBackflow(), mechanism.axis.getFrequency());
+	postProcObj.calcIdealSpecificWork(sucSystObj.sucLinePress, sucSystObj.sucLineRho, disSystObj.disLinePress, sucSystObj.orifFact.orifice[0].getSpecHeatRatMed());
+
+	postProcObj.calcSucValvePotencyLoses(workObj.getSuctionValveWork(), mechanObj.getFreq());
+	postProcObj.calcSucChamberPotencyLoses(workObj.getSucChamberWork(), mechanObj.getFreq());
+	postProcObj.calcDiscValvePotencyLoses(workObj.getDischargeValveWork(), mechanObj.getFreq());
+	postProcObj.calcDiscChamberPotencyLoses(workObj.getDisChamberWork(), mechanObj.getFreq());
+	postProcObj.calcCarnotCOP(systObj.getEvapTemp(), systObj.getCondTemp());
+	postProcObj.calcCarnotPotency();
+
+	postProcObj.calcSpecificWork(sucSystObj.sucLineTemp, sucSystObj.sucLineRho, disSystObj.disLinePress); 
 
 
-	postProcessing.calcIdealMassDischarged(compressionChamberObj.cyl.getDisplacementVolume(), sucLine.refrigerant.getRho());
-	postProcessing.calcMassFlowDischarged(mechanism.axis.getFrequency());
-	postProcessing.calcSuperheatingLoses(sucLine.refrigerant.getRho(), sucChamber.refrigerant.getRho());
-	postProcessing.calcIdealMassSuctioned(mechanism.axis.getFrequency());
-	postProcessing.calcIdealMassFlow(mechanism.axis.getFrequency());
-	postProcessing.calcIdealMassFlowSuctioned(mechanism.axis.getFrequency());
-	postProcessing.calcMassFlowSuctioned(mechanism.axis.getFrequency());
-	postProcessing.calcSuctionRestrictionLoses();
-	postProcessing.calcSuctionTotalLoses();
-	postProcessing.calcLeakLoses(compressionChamberObj.leak.getMassSumFlux(), mechanism.axis.getFrequency());
-	postProcessing.calcIdealMassFlowDischarged(mechanism.axis.getFrequency());
-	postProcessing.calcRefrigerationCapacity(evaporator.getEnthalpyDiference());
-	postProcessing.calcMassFlowTotalLoses();
-	postProcessing.calcDeadVolumePolitropicLoses(disChamber.refrigerant.getPressure(), sucChamber.refrigerant.getPressure(), sucChamber.refrigerant.getRho(), disChamber.refrigerant.getRho(), compressionChamberObj.cyl.getDeadVolume(), disLine.refrigerant.getPressure(), sucLine.refrigerant.getPressure(), mechanism.axis.getFrequency());
-	postProcessing.calcDischargeRestrictionLoses();
-	postProcessing.calcDischargeTotalLoses();
-	postProcessing.calcAnotherLoses();
-	bearings.calcBearingsLoses();
-	//postProcessing.calcTransmissionPotencyLose(bearings.getBearingsLoses(), contador);
-	postProcessing.calcTransmissionPotencyLose(bearings.getLoses(), contador);
-	postProcessing.calcIdealSpecificWork(sucLine.refrigerant.getPressure(), sucLine.refrigerant.getRho(), disLine.refrigerant.getPressure(), multiploOrificesObj.orificesSet.getSpecificHeatsRatioMedia());
-	postProcessing.calcSucValvePotencyLoses(work.getSuctionValveWork(), mechanism.axis.getFrequency());
-	postProcessing.calcSucChamberPotencyLoses(work.getSucChamberWork(), mechanism.axis.getFrequency());
-	postProcessing.calcDiscValvePotencyLoses(work.getDischargeValveWork(), mechanism.axis.getFrequency());
-	postProcessing.calcDiscChamberPotencyLoses(work.getDisChamberWork(), mechanism.axis.getFrequency());
-	postProcessing.calcCarnotCOP(expTemp.getEvaporationTemp(), expTemp.getCondesationTemp());
-	postProcessing.calcCarnotPotency();
-	postProcessing.calcSpecificWork(sucLine.refrigerant.getTemperature(), sucLine.refrigerant.getRho(), disLine.refrigerant.getPressure()); 
-	postProcessing.calcTeoricPotency();
-	postProcessing.calcSuperHeatingSpecificWork(POLOOobj.getVariable("suction_chamber", "right") + 273.15, sucLine.refrigerant.getPressure(), disLine.refrigerant.getPressure());
-	postProcessing.calcSuperHeatingTeoricPotency();
-	postProcessing.calcIndicatedPotency(work.getRefrigerantWork(),mechanism.axis.getFrequency());
-	postProcessing.calcLeakPotencyLoses(work.getLeakWork(), mechanism.axis.getFrequency());
-	postProcessing.calcEffectivePotency();
-	postProcessing.calcRefrigerationCycleLoses();
-	postProcessing.calcSuperheatingLoses();
-	postProcessing.calcAnotherPotencyLoses();
-	postProcessing.calcAxisPotency();
-	motor.calcEfficiency(postProcessing.axisPotency);
-	postProcessing.calcConsumption(motor.getEfficiency(), 0);
-	postProcessing.calcMotorPotencyLoses(0);
-	postProcessing.calcTotalPotencyLoses();
-	postProcessing.calcEletricEfficiency();
-	postProcessing.calcMechanicEfficiency();
-	postProcessing.calcTermodynamicsEfficiency();
-	postProcessing.calcCycleEfficiency();
-	postProcessing.calcEnergyEfficiency();
-	postProcessing.calcMassEfficiency();
-	postProcessing.calcPerformanceEfficiency();
-	postProcessing.calcCOP();
-	postProcessing.calcEER();
+	postProcObj.calcTeoricPotency();
+
+	postProcObj.calcSuperHeatingSpecificWork(273.15 , sucSystObj.sucLinePress, disSystObj.disLinePress);
 
 
-	outputData << "RELACOES MASSICAS:" << endl;
-	outputData << "FLUXO DE MASSA IDEAL\t" << "=\t" << postProcessing.idealMassFlow << endl;
-	outputData << "PERDAS:"<< endl;
-	outputData << "  SUPERAQUECIMENTO NA SUCCAO\t" << "=\t" << postProcessing.superheatingLoses << endl;
-	outputData << "  REFLUXO NA SUCCAO\t" << "=\t" << postProcessing.suctionRefluxLoses << endl;
-	outputData << "  VAZAMENTO PELA FOLGA\t" << "=\t" << postProcessing.leakLoses << endl;
-	outputData << "  REFLUXO NA DESCARGA\t" << "=\t" << postProcessing.dischargeRefluxLoses << endl;
-	outputData << "FLUXO DE MASSA REAL DO COMPRESSOR\t" << "=\t" << postProcessing.massFlowDischarged << endl;
-	outputData << "PERDA TOTAL NO FLUXO DE MASSA\t" << "=\t" << postProcessing.massFlowTotalLoses << endl;
-	outputData << " POTENCIAS:" << endl;
-	outputData << "POTENCIA IDEAL CARNOT\t" << "=\t" << postProcessing.CarnotPotency << endl;
-	outputData << "  PERDA NO CICLO\t" << "=\t" << postProcessing.refrigerationCycleLoses << endl;
-	outputData << "POTENCIA IDEAL ISENTROPICA\t" << "=\t" << postProcessing.teoricPotency << endl;
-	outputData << "  PERDA POR SUPERAQ. A\t " << POLOOobj.getVariable("suction_chamber", "right") << " [C]" << "=\t" << postProcessing.superheatingPotencyLoses << endl;
-	outputData << "POTENCIA ISENTROPICA COM SUPERAQ.\t" << "=\t" << postProcessing.superHeatingTeoricPotency << endl;
-	outputData << "  PERDA POR VAZAMENTO FOLGA P/C\t" << "=\t" << postProcessing.leakPotencyLoses << endl;
-	outputData << "POTENCIA EFETIVA\t" << "=\t" << postProcessing.effectivePotency << endl;
-	outputData << "  PERDA NA VALVULA DE SUCCAO\t" << "=\t" << postProcessing.sucValvePotencyLoses << endl;
-	outputData << "  PERDA NO FILTRO DE SUCCAO\t" << "=\t" << postProcessing.sucChamberPotencyLoses << endl;
-	outputData << "  PERDA NA VALVULA DE DESCARGA\t" << "=\t" << postProcessing.discValvePotencyLoses << endl;
-	outputData << "  PERDA NO FILTRO DE DESCARGA\t" << "=\t" << postProcessing.discChamberPotencyLoses << endl;
-	outputData << "POTENCIA INDICADA\t" << "=\t" << postProcessing.indicadetPotency << endl;
-	outputData << "PERDA NA FOLGA PISTAO CILINDRO E H\t" << "=\t" << postProcessing.gapPistonCylinderPotencyLose/contador << endl;
-	outputData << "PERDA NA TRANSMISSAO\t" << "=\t" << postProcessing.transmissionPotencyLose << endl;
-	outputData << "POTENCIA NO EIXO DO MOTOR\t" << "=\t" << postProcessing.axisPotency << endl;
-	outputData << "PERDA NO MOTOR ELETRICO\t" << "=\t" << postProcessing.motorPotencyLoses << endl;
-	outputData << "POTENCIA TOTAL" << endl;
-	outputData << "PERDA TOTAL DE POTENCIA\t" << "=\t" << postProcessing.totalPotencyLoses << endl;
-	outputData << endl;
-	outputData << "DESEMPENHO:\t" << "=\t" <<  endl;
-	outputData << "  EFICIENCIA ELETRICA\t" << "=\t" << postProcessing.eletricEfficiency << endl;
-	outputData << "  EFICIENCIA MECANICA\t" << "=\t" << postProcessing.mechanicEfficiency << endl;
-	outputData << "  EFICIENCIA TERMODINAMICA\t" << "=\t" << postProcessing.termodynamicsEfficiency << endl;
-	outputData << "  EFICIENCIA DO CICLO\t" << "=\t" << postProcessing.cycleEfficiency << endl;
-	outputData << "  EFICIENCIA ENERGETICA\t" << "=\t" << postProcessing.energyEfficiency << endl;
-	outputData << "  EFICIENCIA VOLUMETRICA\t" << "=\t" << postProcessing.massEfficiency << endl;
-	outputData << "CAPACIDADE DE REFRIGERACAO\t" << "=\t" << postProcessing.refrigerationCapacity << endl;
-	outputData << "CONSUMO\t" << "=\t" << postProcessing.consumption << endl;
-	outputData << "EER\t" << "=\t" << postProcessing.EER << endl;
+	postProcObj.calcSuperHeatingTeoricPotency();
+	postProcObj.calcIndicatedPotency(workObj.getRefrigerantWork(),mechanObj.getFreq());
+	postProcObj.calcLeakPotencyLoses(workObj.getLeakWork(), mechanObj.getFreq());
+	postProcObj.calcEffectivePotency();
+	postProcObj.calcRefrigerationCycleLoses();
+	postProcObj.calcSuperheatingLoses();
+	postProcObj.calcAnotherPotencyLoses();
+	postProcObj.calcAxisPotency();
+	motObj.calcEfficiency(postProcObj.axisPotency);
+	postProcObj.calcConsumption(motObj.getEfficiency(), 0);
+	postProcObj.calcMotorPotencyLoses(0);
+	postProcObj.calcTotalPotencyLoses();
+	postProcObj.calcEletricEfficiency();
+	postProcObj.calcMechanicEfficiency();
+	postProcObj.calcTermodynamicsEfficiency();
+	postProcObj.calcCycleEfficiency();
+	postProcObj.calcEnergyEfficiency();
+	postProcObj.calcMassEfficiency();
+	postProcObj.calcPerformanceEfficiency();
+	postProcObj.calcCOP();
+	postProcObj.calcEER();
 
+	outData << "RELACOES MASSICAS:" << endl;
+	outData << "FLUXO DE MASSA IDEAL\t" << "=\t" << postProcObj.idealMassFlow << endl;
+	outData << "PERDAS:"<< endl;
+	outData << "  SUPERAQUECIMENTO NA SUCCAO\t" << "=\t" << postProcObj.superheatingLoses << endl;
+	outData << "  REFLUXO NA SUCCAO\t" << "=\t" << postProcObj.suctionRefluxLoses << endl;
+	outData << "  VAZAMENTO PELA FOLGA\t" << "=\t" << postProcObj.leakLoses << endl;
+	outData << "  REFLUXO NA DESCARGA\t" << "=\t" << postProcObj.dischargeRefluxLoses << endl;
+	outData << "FLUXO DE MASSA REAL DO COMPRESSOR\t" << "=\t" << postProcObj.massFlowDischarged << endl;
+	outData << "PERDA TOTAL NO FLUXO DE MASSA\t" << "=\t" << postProcObj.massFlowTotalLoses << endl;
+	outData << " POTENCIAS:" << endl;
+	outData << "POTENCIA IDEAL CARNOT\t" << "=\t" << postProcObj.CarnotPotency << endl;
+	outData << "  PERDA NO CICLO\t" << "=\t" << postProcObj.refrigerationCycleLoses << endl;
+	outData << "POTENCIA IDEAL ISENTROPICA\t" << "=\t" << postProcObj.teoricPotency << endl;
+	outData << "  PERDA POR SUPERAQ.  0.0 [C]t" << "=\t" << postProcObj.superheatingPotencyLoses << endl;
+	outData << "POTENCIA ISENTROPICA COM SUPERAQ.\t" << "=\t" << postProcObj.superHeatingTeoricPotency << endl;
+	outData << "  PERDA POR VAZAMENTO FOLGA P/C\t" << "=\t" << postProcObj.leakPotencyLoses << endl;
+	outData << "POTENCIA EFETIVA\t" << "=\t" << postProcObj.effectivePotency << endl;
+	outData << "  PERDA NA VALVULA DE SUCCAO\t" << "=\t" << postProcObj.sucValvePotencyLoses << endl;
+	outData << "  PERDA NO FILTRO DE SUCCAO\t" << "=\t" << postProcObj.sucChamberPotencyLoses << endl;
+	outData << "  PERDA NA VALVULA DE DESCARGA\t" << "=\t" << postProcObj.discValvePotencyLoses << endl;
+	outData << "  PERDA NO FILTRO DE DESCARGA\t" << "=\t" << postProcObj.discChamberPotencyLoses << endl;
+	outData << "POTENCIA INDICADA\t" << "=\t" << postProcObj.indicadetPotency << endl;
+	outData << "PERDA NA FOLGA PISTAO CILINDRO E H\t" << "=\t" << postProcObj.gapPistonCylinderPotencyLose/cont << endl;
+	outData << "POTENCIA NO EIXO DO MOTOR\t" << "=\t" << postProcObj.axisPotency << endl;
+	outData << "PERDA NO MOTOR ELETRICO\t" << "=\t" << postProcObj.motorPotencyLoses << endl;
+	outData << "POTENCIA TOTAL" << endl;
+	outData << "PERDA TOTAL DE POTENCIA\t" << "=\t" << postProcObj.totalPotencyLoses << endl;
+	outData << endl;
+	outData << "DESEMPENHO:\t" << "=\t" <<  endl;
+	outData << "  EFICIENCIA ELETRICA\t" << "=\t" << postProcObj.eletricEfficiency << endl;
+	outData << "  EFICIENCIA MECANICA\t" << "=\t" << postProcObj.mechanicEfficiency << endl;
+	outData << "  EFICIENCIA TERMODINAMICA\t" << "=\t" << postProcObj.termodynamicsEfficiency << endl;
+	outData << "  EFICIENCIA DO CICLO\t" << "=\t" << postProcObj.cycleEfficiency << endl;
+	outData << "  EFICIENCIA ENERGETICA\t" << "=\t" << postProcObj.energyEfficiency << endl;
+	outData << "  EFICIENCIA VOLUMETRICA\t" << "=\t" << postProcObj.massEfficiency << endl;
+	outData << "CAPACIDADE DE REFRIGERACAO\t" << "=\t" << postProcObj.refrigerationCapacity << endl;
+	outData << "CONSUMO\t" << "=\t" << postProcObj.consumption << endl;
+	outData << "EER\t" << "=\t" << postProcObj.EER << endl;
 }

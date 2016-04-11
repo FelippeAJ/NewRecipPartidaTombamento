@@ -9,9 +9,15 @@ OrificeFactory::OrificeFactory()
 
 void OrificeFactory::creatOrifice()
 {
-	readOrificeNumber.contOrificesNumber();
+	POLOIO POLOIOobj("input.dat");
+	orifNum	=	POLOIOobj.getParamVal("orifices_number", "left");
 
-	orifice = new Orifice[readOrificeNumber.getOrificesNumber()];
+	orifice = new Orifice[orifNum];
 
 	Orifice::id = 0;
+}
+
+double OrificeFactory::getOrifNum()
+{
+	return orifNum;
 }

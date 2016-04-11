@@ -2,16 +2,32 @@
 
 Motor::Motor()
 {
-	Input engineReaderData;
+	POLOIO POLOIOobj1("motor.dat");
 
-	engineReaderData.contMotorCoefNumber();
+	expTemp		=	POLOIOobj1.getParamVal("motor", "left") + 273.15;
+	coefNum		=	POLOIOobj1.getParamVal("coeficient_number", "left");
 
-	engineReaderData.dimensionMotorCoef();
+	coeficients.resize(coefNum,0);
 
-	engineReaderData.readMotorData();
+	string idStr;
 
-	setCoef(engineReaderData.getMotorCoef());
+	for(id = 0; id < coefNum; id++)
+	{
+		idStr = to_string(id);
+		coeficients[id]	=	POLOIOobj1.getParamVal("coef", idStr, "left");
+	}
 
+	
+	/**POLOIO POLOIOobj2("motor.dat");
+
+	string idStr;
+	int i;
+
+	for(i=0; i < 5; i++)
+	{
+		idStr = to_string(i);
+		coeficients[i]	=	POLOIOobj2.getParamVal("coef", idStr, "left");
+	}*/
 }
 
 void Motor::setCoef(vector<double> coeficientsValue)

@@ -1,56 +1,52 @@
 #ifndef MECHANISM_H
 #define MECHANISM_H
 
-#include <cmath>
+#include <iostream>
+#include <fstream>
+#include <string>
 #include "Constants.h"
-#include "Input.h"
-#include "Axis.h"
-#include "Crank.h"
-#include "Rod.h"
-#include "Piston.h"
-#include "Oil.h"
+#include "POLOIO.h"
 
 class Mechanism
 {
 public:
 	Mechanism();
+	void calcSupDeadPt();
+	void calcPos();
+	void calcVel();
+	void calcVelMed();
+	void calcShaftVel();
+	void incremTheta(double deltaTheta);
 
-	void calcSuperiorDeadPoint();
-	void calcPosition();
-	void calcVelocity();
-	void calcVelocityMedia();
-	void calcGapFrictionFactor(double cylWallTemp, double sucLinePres, double cylBore, double cylPres);
-	void calcContactLength();
-
-	void setMechanism(string mechanismName);
-	void setStroke(double strokeValue);
-
-	string getMechanism();
-	double getSuperiorDeadPoint();
-	double getPosition();
-	double getVelocity();
-	double getVelocityMedia();
+	double getSupDeadPt();
+	double getPos();
+	double getVel();
+	double getVelMed();
+	double getShaftVel();
+	double getFreq();
+	double getEccent();
+	double getTheta();
 	double getStroke();
-	double getGapFrictionFactor();
-
-	Axis axis;
-	Crank crank;
-	Rod rod;
-	Piston piston;
-	Oil oil;
+	string getMech();
+	
 	Constants cte;
 
-protected:
-	string mechanism;
-	double superiorDeadPoint;
-	double position;
-	static double velocity;
-	double velocityMedia;
+//protected:
+
+	string mech;
+	double supDeadPt;
 	double stroke;
-	double gapFrictionFactor;
-	double contactLength;
+	double pos;
+	double velMed;
+	double rot;
+	double shaftVel;
+	double freq;
+	double revers;
+	double eccent;
+	double rodLength;
+	static double theta;
+	static double vel;
+	
 };
 
 #endif
-
-

@@ -1,10 +1,8 @@
 #ifndef MOTOR_H
 #define MOTOR_H
 
-#include "Input.h"
+#include "POLOIO.h"
 #include "Interpolation.h"
-#include "GlobalHeatTransfer.h"
-#include "HeatTransferRate.h"
 
 class Motor
 {
@@ -18,14 +16,16 @@ public:
 	double getEfficiency(); 
 	double getHeat();
 
-	GlobalHeatTransfer UAobj;
-	HeatTransferRate heatTransferRateObj;
+	double expTemp;
+
 
 protected:
 	vector<double> coeficients;
 	double efficiency;
 	double heat;
 	Interpolation interp;
+	int coefNum;
+	int id;
 };
 
 #endif

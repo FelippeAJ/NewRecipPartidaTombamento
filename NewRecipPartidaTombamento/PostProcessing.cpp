@@ -129,14 +129,9 @@ void PostProcessing::calcGapPistonCylinderPotencyLose(double frictionPistonCylin
 	gapPistonCylinderPotencyLose = gapPistonCylinderPotencyLose + frictionPistonCylinderValue*pistonVelocity;
 }
 
-//void PostProcessing::calcTransmissionPotencyLose(double bearingLoses, int contador)
-//{
-//	transmissionPotencyLose = gapPistonCylinderPotencyLose/contador + bearingLoses;
-//}
-
-void PostProcessing::calcTransmissionPotencyLose(double loses, int contador)
+void PostProcessing::calcTransmissionPotencyLose(double bearingLoses, int contador)
 {
-	transmissionPotencyLose = gapPistonCylinderPotencyLose/contador + loses;
+	transmissionPotencyLose = gapPistonCylinderPotencyLose/contador + bearingLoses;
 }
 
 void PostProcessing::calcIdealSpecificWork(double suctionLinePres, double suctionLineRho, double dischargeLinePres, double specificHeatsRatioMedia)
@@ -180,32 +175,17 @@ void PostProcessing::calcSpecificWork(double sucLineTempValue, double sucLineRho
 {
 	double sucLineEntalphy;
 	
-	refrigerant.setTemperature(sucLineTempValue);
-	refrigerant.setRho(sucLineRhoValue);
-	refrigerant.calcEntalphy();
-	refrigerant.calcEntropy();
+	refrig.setTemp(sucLineTempValue);
+	refrig.setRho(sucLineRhoValue);
+	refrig.calcH();
+	refrig.calcS();
 
-	sucLineEntalphy = refrigerant.getEnthalpy();
+	sucLineEntalphy = refrig.getH();
 
-	refrigerant.setPressure(disLinePresValue);
-	refrigerant.calcIsentropicProperties();
+	refrig.setPress(disLinePresValue);
+	refrig.calcIsentProp();
 
-	specificWork = refrigerant.getEnthalpy() - sucLineEntalphy;
-	
-
-	/*double sucLineEntropy2;
-	double sucLineEnthalpy2;
-	
-
-	refrigerant.calcEntropy(sucLineTemperatureValue, sucLineRho);
-	sucLineEntropy2 = refrigerant.getEntropy();	
-
-	refrigerant.calcTemperature(disLineRhoValue, sucLineEntropy2);
-
-	refrigerant.calcEntalphy(sucLineTemperatureValue, sucLineRho);  
-	sucLineEnthalpy2 = refrigerant.getEnthalpy();
-	
-	specificWork = refrigerant.h - sucLineEnthalpy2;*/
+	specificWork = refrig.getH() - sucLineEntalphy;
 }
 
 void PostProcessing::calcTeoricPotency()
@@ -217,35 +197,18 @@ void PostProcessing::calcSuperHeatingSpecificWork(double sucLineTempValue, doubl
 {
 	double sucLineEntalphy;
 
-	refrigerant.setTemperature(sucLineTempValue);
-	refrigerant.setPressure(sucLinePresValue);
-	refrigerant.calcRho();
+	refrig.setTemp(sucLineTempValue);
+	refrig.setPress(sucLinePresValue);
+	refrig.calcRho();
 	
-	refrigerant.calcEntalphy();
-	refrigerant.calcEntropy();
-	sucLineEntalphy = refrigerant.getEnthalpy();
+	refrig.calcH();
+	refrig.calcS();
+	sucLineEntalphy = refrig.getH();
 
-	refrigerant.setPressure(disLinePresValue);
-	refrigerant.calcIsentropicProperties();
+	refrig.setPress(disLinePresValue);
+	refrig.calcIsentProp();
 
-	superHeatingSpecificWork = refrigerant.getEnthalpy() - sucLineEntalphy;
-
-	
-	
-	/*double sucLineEnthalpy;
-	double sucLineEntropy;
-
-	refrigerant.calcRho(sucLineTemperatureValue, sucLineRhoValue);
-	
-	refrigerant.calcEntalphy(sucLineTemperatureValue, refrigerant.getRho());  
-	sucLineEnthalpy = refrigerant.getEnthalpy();
-	
-	refrigerant.calcEntropy(sucLineTemperatureValue, refrigerant.getRho());
-	sucLineEntropy = refrigerant.getEntropy();
-
-	refrigerant.calcTemperature(disLineRhoValue, sucLineEntropy);
-
-	superHeatingSpecificWork = refrigerant.h - sucLineEnthalpy; */	
+	superHeatingSpecificWork = refrig.getH() - sucLineEntalphy;
 }
 
 void PostProcessing::calcSuperHeatingTeoricPotency()

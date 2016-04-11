@@ -1,143 +1,102 @@
 #include "EffectiveForceArea.h"
 
-int EffectiveForceArea::id = 0;
+double EffectiveForceArea::sucEffForArea = 0;
 
-double EffectiveForceArea::effectSucArea = 0;
-
-double EffectiveForceArea::effectDisArea = 0;
+double EffectiveForceArea::disEffForArea = 0;
 
 EffectiveForceArea::EffectiveForceArea()
 {
-	Input effectForceAreaReader;
-
-	effectForceAreaReader.contOrificesNumber();
-
-	effectForceAreaReader.dimensionEffectForceAreaVector();
-
-	effectForceAreaReader.contEffectForceAreaPointsNumber();
-
-	effectForceAreaReader.dimensionEffectForceAreaMatrix();
-
-	effectForceAreaReader.readEffectForceArea();
-
-	setEffectForceArea(effectForceAreaReader.getEffectForceAreaData(id));
-
-	setBackflowEffectForceArea(effectForceAreaReader.getBackFlowEffectiveForceAreaData(id));
-
-	setValveDisplacement(effectForceAreaReader.getEffectForceAreaValveDisplacementData(id));
 	
 }
 
-void EffectiveForceArea::calcSucEffectForceArea(double cylPress, double sucChamberPress, double valvePosition)
+void EffectiveForceArea::calcSucEffForArea(double compChambPress, double sucChambPress, double valvePos)
 {	
-	effectSucArea = 0;
+	sucEffForArea = 0;
 
-	Spline_interp static flow(valveDisplacement,effectForceArea);
+	Spline_interp static flow(valveDisp,effForArea);
 
-	Spline_interp static backFlow(valveDisplacement,backflowEffectForceArea);
+	Spline_interp static backFlow(valveDisp,backfEffForArea);
 
-	if(cylPress <= sucChamberPress)
+	if(compChambPress <= sucChambPress)
 	{
-		effectSucArea = flow.interp(valvePosition);
+		sucEffForArea = flow.interp(valvePos);
 	}
 	else
 	{
-		effectSucArea = backFlow.interp(valvePosition);
+		sucEffForArea = backFlow.interp(valvePos);
 	}
 }
 
-void EffectiveForceArea::calcDisEffectForceArea(double cylPress, double disChamberPress, double valvePosition)
+void EffectiveForceArea::calcDisEffForArea(double compChambPress, double disChambPress, double valvePos)
 {
-	effectDisArea = 0;
+	disEffForArea = 0;
 
-	Spline_interp static flow(valveDisplacement,effectForceArea);
+	Spline_interp static flow(valveDisp,effForArea);
 
-	Spline_interp static backFlow(valveDisplacement,backflowEffectForceArea);
+	Spline_interp static backFlow(valveDisp,backfEffForArea);
 
-	if(cylPress >= disChamberPress)
+	if(compChambPress >= disChambPress)
 	{
-		effectDisArea = flow.interp(valvePosition);
+		disEffForArea = flow.interp(valvePos);
 	}
 	else
 	{
-		effectDisArea = backFlow.interp(valvePosition);
+		disEffForArea = backFlow.interp(valvePos);
 	}
 }
 
-void EffectiveForceArea::setEffectForceArea(vector<double> effectForceAreaValue)
+void EffectiveForceArea::setEffForArea(vector<double> effForAreaVal)
 {
-	int cont = 0;
+	effForArea.resize(effForAreaVal.size());
 
-	for(int i = 1; i < effectForceAreaValue.size(); i++)
+	for(int i = 0; i < effForAreaVal.size(); i++)
 	{
-		if(effectForceAreaValue[i] != 0)
-		{
-			cont++;
-		}
-	}
-	
-	effectForceArea.resize(cont + 1);
-
-	for(int i = 0; i < effectForceArea.size(); i++)
-	{
-		effectForceArea[i] = effectForceAreaValue[i]; 
+		effForArea[i] = effForAreaVal[i]; 
 	}
 }
 
-void EffectiveForceArea::setBackflowEffectForceArea(vector<double> backflowEffectForceAreaValue)
+void EffectiveForceArea::setBackfEffForArea(vector<double> backfEffForAreaVal)
 {
-	int cont = 0;
+	backfEffForArea.resize(backfEffForAreaVal.size());
 
-	for(int i = 1; i < backflowEffectForceAreaValue.size(); i++)
+	for(int i = 0; i <  backfEffForAreaVal.size(); i++)
 	{
-		if(backflowEffectForceAreaValue[i] != 0)
-		{
-			cont++;
-		}
-	}
-	
-	 backflowEffectForceArea.resize(cont + 1);
-
-	for(int i = 0; i <  backflowEffectForceArea.size(); i++)
-	{
-		 backflowEffectForceArea[i] = backflowEffectForceAreaValue[i]; 
+		backfEffForArea[i] = backfEffForAreaVal[i]; 
 	}
 }
 
-void EffectiveForceArea::setValveDisplacement(vector<double> valveDisplacementValue)
+void EffectiveForceArea::setValveDisp(vector<double> valveDispVal)
 {
-	int cont = 0;
+	valveDisp.resize(valveDispVal.size());
 
-	for(int i = 1; i < valveDisplacementValue.size(); i++)
+	for(int i = 0; i < valveDispVal.size(); i++)
 	{
-		if(valveDisplacementValue[i] != 0)
-		{
-			cont++;
-		}
-	}
-	
-	valveDisplacement.resize(cont + 1);
-
-	for(int i = 0; i < valveDisplacement.size(); i++)
-	{
-		valveDisplacement[i] = valveDisplacementValue[i]; 
+		valveDisp[i] = valveDispVal[i]; 
 	}
 }
 
-double EffectiveForceArea::getEffectSucArea()
+void EffectiveForceArea::setPointNum(double pointNumVal)
 {
-	return effectSucArea;
+	pointNum = pointNumVal;
 }
 
-double EffectiveForceArea::getEffectDisArea()
+double EffectiveForceArea::getPointNum()
 {
-	return effectDisArea;
+	return pointNum;
 }
 
-void EffectiveForceArea::incrementId()
+double EffectiveForceArea::getSucEffForArea()
 {
-	++id;
+	return sucEffForArea;
 }
+
+double EffectiveForceArea::getDisEffForArea()
+{
+	return disEffForArea;
+}
+
+
+
 
 
 

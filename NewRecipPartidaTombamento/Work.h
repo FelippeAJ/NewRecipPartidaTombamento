@@ -1,7 +1,7 @@
 #ifndef WORK_H
 #define WORK_H
 
-#include "Input.h"
+#include "POLOIO.h"
 #include "Refrigerant.h"
 
 class Work
@@ -30,11 +30,17 @@ public:
 	double getDisChamberWork();
 	double getLeakWork();
 
-	Refrigerant refrigerant;
+	Refrigerant refrig;
 
 	double sucValveWork;
-
 	double disValveWork;
+	double sucChamberWork;
+	double disChamberWork;
+	double termo1;
+	double termo2;
+	double termo3;
+	double termo4;
+
 
 protected:
 	double workPressure;
@@ -48,9 +54,9 @@ protected:
 	double totalDisValveWork;
 	
 	double totalSucChamberWork;
-	double sucChamberWork;
+	
 	double totalDisChamberWork;
-	double disChamberWork;
+	
 	double leakWork;
 	double inicialIteration;
 };

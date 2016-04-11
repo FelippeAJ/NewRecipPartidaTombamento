@@ -1,146 +1,100 @@
 #include "EffectiveFlowArea.h"
 
-int EffectiveFlowArea::id = 0;
+double EffectiveFlowArea::sucEffFlArea = 0;
 
-double EffectiveFlowArea::effectSucArea = 0;
-
-double EffectiveFlowArea::effectDisArea = 0;
+double EffectiveFlowArea::disEffFlArea = 0;
 
 EffectiveFlowArea::EffectiveFlowArea()
 {
-	/*
-	Input effectFlowAreaReader;
 
-	effectFlowAreaReader.contOrificesNumber();
-
-	effectFlowAreaReader.dimensionEffectFlowAreaVector();
-
-	effectFlowAreaReader.contEffectFlowAreaPointsNumber();
-
-	effectFlowAreaReader.dimensionEffectFlowAreaMatrix();
-
-	effectFlowAreaReader.readEffectFlowArea();
-
-	setEffectFlowArea(effectFlowAreaReader.getEffectFlowAreaData(id));
-
-	setEffectBackflowArea(effectFlowAreaReader.getEffectiveBackFlowAreaData(id));
-
-	setValveDisplacement(effectFlowAreaReader.getValveDisplacementData(id));
-
-	*/
 }
 
-void EffectiveFlowArea::setEffectFlowArea(vector<double> effectFlowAreaValue)
-{
-	int cont = 0;
-
-	for(int i = 1; i < effectFlowAreaValue.size(); i++)
-	{
-		if(effectFlowAreaValue[i] != 0)
-		{
-			cont++;
-		}
-	}
-	
-	effectFlowArea.resize(cont + 1);
-
-	for(int i = 0; i < effectFlowArea.size(); i++)
-	{
-		effectFlowArea[i] = effectFlowAreaValue[i]; 
-	}
-}
-
-void EffectiveFlowArea::setEffectBackflowArea(vector<double> effectBackflowAreaValue)
-{
-	int cont = 0;
-
-	for(int i = 1; i < effectBackflowAreaValue.size(); i++)
-	{
-		if(effectBackflowAreaValue[i] != 0)
-		{
-			cont++;
-		}
-	}
-	
-	effectBackflowArea.resize(cont + 1);
-
-	for(int i = 0; i < effectBackflowArea.size(); i++)
-	{
-		effectBackflowArea[i] = effectBackflowAreaValue[i]; 
-	}
-}
-
-void EffectiveFlowArea::setValveDisplacement(vector<double> valveDisplacementValue)
-{
-	int cont = 0;
-
-	for(int i = 1; i < valveDisplacementValue.size(); i++)
-	{
-		if(valveDisplacementValue[i] != 0)
-		{
-			cont++;
-		}
-	}
-	
-	valveDisplacement.resize(cont + 1);
-
-	for(int i = 0; i < valveDisplacement.size(); i++)
-	{
-		valveDisplacement[i] = valveDisplacementValue[i]; 
-	}
-}
-
-double EffectiveFlowArea::getSucEffectFlowArea()
-{
-	return effectSucArea;
-}
-
-double EffectiveFlowArea::getDisEffectFlowArea()
-{
-	return effectDisArea;
-}
-
-void EffectiveFlowArea::incrementId()
-{
-	++id;
-}
-
-void EffectiveFlowArea::calcSucEffectFlowArea(double cylPress, double sucChamberPress, double valvePosition)
+void EffectiveFlowArea::calcSucEffFlArea(double compChambPress, double sucChambPress, double valvePos)
 {	
-	effectSucArea = 0;
+	sucEffFlArea = 0;
 
-	Spline_interp static flow(valveDisplacement,effectFlowArea);
+	Spline_interp static flow(valveDisp, effFlArea);
 
-	Spline_interp static backFlow(valveDisplacement,effectBackflowArea);
+	Spline_interp static backFlow(valveDisp, backfeffFlArea);
 
-	if(cylPress <= sucChamberPress)
+	if(compChambPress <= sucChambPress)
 	{
-		effectSucArea = flow.interp(valvePosition);
+		sucEffFlArea = flow.interp(valvePos);
 	}
 	else
 	{
-		effectSucArea = -backFlow.interp(valvePosition);
+		sucEffFlArea = -backFlow.interp(valvePos);
 	}
+
 }
 
-void EffectiveFlowArea::calcDiscEffectFlowArea(double cylPress, double disChamberPress, double valvePosition)
+void EffectiveFlowArea::calcDisEffFlArea(double compChambPress, double disChambPress, double valvePos)
 {
-	effectDisArea = 0;
+	disEffFlArea = 0;
 
-	Spline_interp static flow(valveDisplacement,effectFlowArea);
+	Spline_interp static flow(valveDisp, effFlArea);
 
-	Spline_interp static backFlow(valveDisplacement,effectBackflowArea);
+	Spline_interp static backFlow(valveDisp, backfeffFlArea);
 
-	if(cylPress >= disChamberPress)
+	if(compChambPress >= disChambPress)
 	{
-		effectDisArea = flow.interp(valvePosition);
+		disEffFlArea = flow.interp(valvePos);
 	}
 	else
 	{
-		effectDisArea = -backFlow.interp(valvePosition);
+		disEffFlArea = -backFlow.interp(valvePos);
 	}
 }
 
+void EffectiveFlowArea::setEffFlArea(vector<double> effFlAreaVal)
+{
+	effFlArea.resize(effFlAreaVal.size());
+
+	for(int i = 0; i < effFlAreaVal.size(); i++)
+	{
+		effFlArea[i] = effFlAreaVal[i]; 
+	}
+}
+
+void EffectiveFlowArea::setBackfEffFlArea(vector<double> backflEffFlAreaVal)
+{
+	backfeffFlArea.resize(backflEffFlAreaVal.size());
+
+	for(int i = 0; i < backflEffFlAreaVal.size(); i++)
+	{
+		backfeffFlArea[i] = backflEffFlAreaVal[i]; 
+	}
+}
+
+void EffectiveFlowArea::setValveDisp(vector<double> valveDispVal)
+{	
+	valveDisp.resize(valveDispVal.size());
+
+	for(int i = 0; i < valveDispVal.size(); i++)
+	{
+		valveDisp[i] = valveDispVal[i]; 
+	}
+}
+
+void EffectiveFlowArea::setPointNum(double pointNumVal)
+{
+	pointNum = pointNumVal;
+}
+
+double EffectiveFlowArea::getPointNum()
+{
+	return pointNum;
+}
+
+double EffectiveFlowArea::getSucEffFlArea()
+{
+	return sucEffFlArea;
+}
+
+double EffectiveFlowArea::getDisEfftFlArea()
+{
+	return disEffFlArea;
+}
 
 
 

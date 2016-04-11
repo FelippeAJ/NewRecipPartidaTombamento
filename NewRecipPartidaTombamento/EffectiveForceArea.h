@@ -1,7 +1,7 @@
 #ifndef EFFECTIVEFORCEAREA_H
 #define EFFECTIVEFORCEAREA_H
 
-#include "Input.h"
+#include "POLOIO.h"
 #include "NumericalRecipes.h"
 
 class EffectiveForceArea
@@ -9,26 +9,25 @@ class EffectiveForceArea
 public:
 	EffectiveForceArea();
 
-	void calcSucEffectForceArea(double cylPress, double sucChamberPress, double valvePosition);
-	void calcDisEffectForceArea(double cylPress, double disChamberPress, double valvePosition);
+	void calcSucEffForArea(double compChambPress, double sucChambPress, double valvePos);
+	void calcDisEffForArea(double compChambPress, double disChambPress, double valvePos);
 
-	void setEffectForceArea(vector<double> effectForceAreaValue);
-	void setBackflowEffectForceArea(vector<double> backflowEffectForceAreaValue);
-	void setValveDisplacement(vector<double> valveDisplacementValue);
+	void setEffForArea(vector<double> effForAreaVal);
+	void setBackfEffForArea(vector<double> backfEffForAreaVal);
+	void setValveDisp(vector<double> valveDispVal);
+	void setPointNum(double pointNUmber);
 	
-	double getEffectSucArea();
-	double getEffectDisArea();
+	double getSucEffForArea();
+	double getDisEffForArea();
+	double getPointNum();
 
-	void incrementId();
-
-	static int id;
-	
 protected:
-	VecDoub effectForceArea;
-	VecDoub backflowEffectForceArea;
-	VecDoub valveDisplacement;
-	static double effectSucArea;
-	static double effectDisArea;
+	VecDoub effForArea;
+	VecDoub backfEffForArea;
+	VecDoub valveDisp;
+	static double sucEffForArea;
+	static double disEffForArea;
+	double pointNum;
 	
 };
 

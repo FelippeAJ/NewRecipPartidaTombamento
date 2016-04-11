@@ -4,59 +4,29 @@ double SimulationParameters::timeStep = 0;
 
 SimulationParameters::SimulationParameters()
 {
-	Input simulParamReaderData;
+	POLOIO POLOIOobj("input.dat");
 
-	simulParamReaderData.readSimulationParametersData();
-
-	setDeltaTheta(simulParamReaderData.getSimulParamDeltaTheta());
-
-	setCyclesNumber(simulParamReaderData.getSimulParamCyclesNumber());
-
-	setThermalBalance(simulParamReaderData.getSimulParamThermalBalanceFlag());
-
-	setThermalSimulation(simulParamReaderData.getSimulParamThermalSimulationFlag());
-
-	setDirectSuctionFactor(simulParamReaderData.getSimulParamDirectSuctionFactor());
+	deltaTheta		=	POLOIOobj.getParamVal("delta_theta", "left");
+	cyclesNum		=	POLOIOobj.getParamVal("cycles_number", "left");
+	thermBalFlag	=	POLOIOobj.getParamVal("thermal_balance", "left");
+	thermSimulFlag	=	POLOIOobj.getParamVal("thermal_simulation", "left");
+	directSucFact	=	POLOIOobj.getParamVal("direct_suction_factor", "left");
 
 }
 
-void SimulationParameters::calcFinalTheta()
+void SimulationParameters::calcFinTheta()
 {
-	finalTheta = 2*cte.Pi*cyclesNumber;
+	finTheta = 2*cte.Pi*cyclesNum;
 }
 
-void SimulationParameters::calcTimeStep(double axisVelocityValue)
+void SimulationParameters::calcTimeStep(double shaftVelValue)
 {
-	timeStep = deltaTheta/axisVelocityValue;	
+	timeStep = deltaTheta/shaftVelValue;	
 }
 
 void SimulationParameters::calcLastTheta()
 {
-	lastTheta = finalTheta - 2*cte.Pi;
-}
-
-void SimulationParameters::setDeltaTheta(double deltaThetaValue)
-{
-	deltaTheta = deltaThetaValue;
-}
-
-void SimulationParameters::setDirectSuctionFactor(double directSuctionFactorValue)
-{
-	directSuctionFactor = directSuctionFactorValue;
-}
-
-void SimulationParameters::setCyclesNumber(double cyclesNumberValue)
-{
-	cyclesNumber = cyclesNumberValue;
-}
-
-void SimulationParameters::setThermalBalance(double thermalBalanceFlagValue)
-{
-	thermalBalanceFlag = thermalBalanceFlagValue;
-}
-void SimulationParameters::setThermalSimulation(double thermalSimulationFlagValue)
-{
-	thermalSimulationFlag = thermalSimulationFlagValue;
+	lastTheta = finTheta - 2*cte.Pi;
 }
 
 double SimulationParameters::getDeltaTheta()
@@ -64,14 +34,14 @@ double SimulationParameters::getDeltaTheta()
 	return deltaTheta;
 }
 
-double SimulationParameters::getCyclesNumber()
+double SimulationParameters::getCyclesNum()
 {
-	return cyclesNumber;
+	return cyclesNum;
 }
 
-double SimulationParameters::getFinalTheta()
+double SimulationParameters::getFinTheta()
 {
-	return finalTheta;
+	return finTheta;
 }
 
 double SimulationParameters::getTimeStep()
@@ -84,17 +54,17 @@ double SimulationParameters::getLastTheta()
 	return lastTheta;
 }
 
-double SimulationParameters::getThermalBalanceFlag()
+double SimulationParameters::getThermBalFlag()
 {
-	return thermalBalanceFlag;
+	return thermBalFlag;
 }
 
-double SimulationParameters::getThermalSimulationFlag()
+double SimulationParameters::getThermSimulFlag()
 {
-	return thermalSimulationFlag;
+	return thermSimulFlag;
 }
 
-double SimulationParameters::getDirectSuctionFactor()
+double SimulationParameters::getDirectSucFact()
 {
-	return directSuctionFactor;
+	return directSucFact;
 }

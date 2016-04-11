@@ -2,20 +2,18 @@
 #define REFRIGERANT_H
 
 #include <iostream>
+#include <fstream>
+#include <string>
 #include <cmath>
 #include <algorithm>
 #include <stdio.h>
 #include <windows.h>
 #include <fstream>
-
-#include "Input.h"
-#include "Constants.h"
-#include "NumericalRecipes.h"
+#include "POLOIO.h"
 
 
-#include "Crank.h"
 
-using namespace std;
+
 
 typedef void (__stdcall *fp_SETUPdllTYPE)(long &,char*,char*,char*,long &,char*,long ,long ,long ,long );
 typedef void (__stdcall *fp_WMOLdllTYPE)(double *,double &);
@@ -29,50 +27,54 @@ typedef void (__stdcall *fp_ENTROdllTYPE)(double &,double &,double *,double &);
 typedef void (__stdcall *fp_PRESSdllTYPE)(double &,double &,double *,double &);
 typedef void (__stdcall *fp_PSFLSHdllTYPE)(double &,double &,double *,double &,double &,double &,double &,double *,double *,double &,double &,double &,double &,double &,double &,long &,char*,long );
 
+
 class Refrigerant
 {
 public:
 	Refrigerant();
 
 	void setRho(double rhoValue);
-	void setPressure(double pressureValue);
-	void setTemperature(double temperatureValue);
+	void setPress(double pressureValue);
+	void setTemp(double temperatureValue);
+	void setH(double enthalpyValue);
+	void setCp(double cpValue);
+	void setCv(double cvValue);
+	void setVisc(double viscosityValue);
+	void setThermConduc(double thermalConductivityValue);
+	void setdPresDTemp(double dPresDTempValue);
 	void setMass(double massValue);
-	void setViscosityThermalCond(string viscosityThermalCondName);
-	void dimensionTabledProperties(double deltaTheta);
-	void setTabledProperties(double deltaTheta);
 
 	void calcMolWeight();
-	void calcSaturationProperties(long phaseFlagValue);
-	void calcPressure();
-	void calcTemperatureExplicitily(double derivateTemperature, double timeStep);
+	void calcSatProp(long phaseFlag);
+	void calcPress();
+	void calcTempExplic(double derivTemp, double timeStep);
 	void calcRho();
-	void calcRho(double volumeValue);
-	void calcMass(double volumeValue);
-	void calcSpecificHeats();
-	void calcViscosityThermalConductivity(double thetaValue);
+	void calcRho(double volVal);
+	void calcMass(double volVal);
+	void calcSpecHeat();
+	void calcViscThermConduc();
 	void calcDpresDtemp();
-	void calcEntalphy();
-	void calcEntropy();
-	void calcSpecificHeatsRatio();
-	void calcIsentropicProperties();
+	void calcH();
+	void calcS();
+	void calcSpecHeatRat();
+	void calcIsentProp();
 
-	double getGasConstant();
+	double getGasCt();
 	double getMolWeight();
-	double getPressure();
-	double getTemperature();
+	double getPress();
+	double getTemp();
 	double getRho();
-	double getRhoLiquid();
-	double getRhoVapor();
+	double getRhoLiq();
+	double getRhoVap();
 	double getMass();
 	double getCp();
 	double getCv();
-	double getViscosity();
-	double getThermalConductivity();
+	double getVisc();
+	double getThermConduc();
 	double getDPresDTemp();
-	double getEnthalpy();
-	double getEntropy();
-	double getSpecificHeatsRatio();
+	double getH();
+	double getS();
+	double getSpeciHeatRat();
 
 	static fp_SETUPdllTYPE SETUPdll;
 	static fp_WMOLdllTYPE WMOLdll;
@@ -86,14 +88,13 @@ public:
 	static fp_PRESSdllTYPE PRESSdll;
 	static fp_PSFLSHdllTYPE PSFLSHdll;
 
-	Constants cte;
-
 	static const long ncmax = 20;
 	static const long errormessagelength=255;
 	static char herr[errormessagelength+1];
 	static double xcom[ncmax];
 	static long ierr;
 
+	
 protected:
 	double molWeight;
 	double gasConstant;
@@ -111,16 +112,10 @@ protected:
 	double thermalConductivity;
 	double dPresDTemp;
 	double specificHeatsRatio;
-
-	string viscosityThermalCond;
-	VecDoub tabledViscosity;
-	VecDoub tabledThermalConductivity;
-	VecDoub tabledTemperature;
-	static int id;
 };
 
 #endif
 
-void setRefrigerant(char refrigerantName[]);
+void setRefrigerant();
 
 void loadRefprop();

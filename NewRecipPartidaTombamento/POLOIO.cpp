@@ -61,7 +61,7 @@ void POLOIO::setStringMatrix()
 }
 
 
-double POLOIO::getVariable(string name,string direction)
+double POLOIO::getParamVal(string name,string direction)
 {
 	for(int i = 0; i < stringMatrix.size(); i++)
 	{
@@ -104,8 +104,52 @@ double POLOIO::getVariable(string name,string direction)
 	return variableValue;
 }
 
-double POLOIO::getVariable(string name1, string name2, string direction)
+string POLOIO::getWord(string name,string direction)
 {
+	for(int i = 0; i < stringMatrix.size(); i++)
+	{
+		for(int j =0; j < stringMatrix[i].size(); j++)
+		{
+			
+			if(stringMatrix[i][j] == name  && direction == "right")
+			{
+				if((j+1) < stringMatrix[i].size())
+				{
+					word = atof(stringMatrix[i][j+1].c_str());
+				}
+				else
+				if((j+1) == stringMatrix[i].size())
+				{
+					word = stringMatrix[i+1][0];
+				}
+			}
+			else
+			if(stringMatrix[i][j] == name && direction == "left")
+			{
+				if( j > 0)
+				{
+					word = stringMatrix[i][j-1];
+				}
+				else
+				if( j == 0)
+				{
+					word = stringMatrix[i-1][stringMatrix[i-1].size()-1];
+				}
+				else
+				if(j == 0 && i == 0)
+				{
+					cout << "Nao e possivel realizar essa leitura" << endl;
+				}
+			}
+		}
+	}
+
+	return word;
+}
+
+double POLOIO::getParamVal(string name1, string name2, string direction)
+{
+
 	for(int i = 0; i < stringMatrix.size(); i++)
 	{
 		for(int j =0; j < stringMatrix[i].size(); j++)
@@ -145,10 +189,49 @@ double POLOIO::getVariable(string name1, string name2, string direction)
 	}
 	
 	return variableValue;
+	/*for(int i = 0; i < stringMatrix.size(); i++)
+	{
+		for(int j =0; j < stringMatrix[i].size(); j++)
+		{
+			
+			if(stringMatrix[i][j] == name2 && stringMatrix[i][j-1] == name1 && direction == "right")
+			{
+				if((j+1) < stringMatrix[i].size())
+				{
+					variableValue = atof(stringMatrix[i][j+1].c_str());
+				}
+				else
+				if((j+1) == stringMatrix[i].size())
+				{
+					variableValue = atof(stringMatrix[i+1][0].c_str());
+				}
+			}
+			else
+			if(stringMatrix[i][j] == name1 && stringMatrix[i][j+1] == name2  && direction == "left")
+			{
+				if( j > 0)
+				{
+					variableValue = atof(stringMatrix[i][j-1].c_str());
+				}
+				else
+				if( j == 0)
+				{
+					variableValue = atof(stringMatrix[i-1][stringMatrix[i-1].size()-1].c_str());
+				}
+				else
+				if(j == 0 && i == 0)
+				{
+					cout << "Nao e possivel realizar essa leitura" << endl;
+				}
+			}
+		}
+	}
+	
+	return variableValue;*/
 
 }
 
-double POLOIO::getVariable(string name1, string name2, string name3, string direction)
+double POLOIO::getParamVal(string name1, string name2, string name3, string direction)
 {
 	for(int i = 0; i < stringMatrix.size(); i++)
 	{
@@ -167,13 +250,80 @@ double POLOIO::getVariable(string name1, string name2, string name3, string dire
 					variableValue = atof(stringMatrix[i+1][0].c_str());
 				}
 			}
+			else
+			if(stringMatrix[i][j] == name3 && stringMatrix[i][j-1] == name2 && stringMatrix[i][j-2] == name1 && direction == "left")
+			{
+				if(j > 0 )
+				{
+					variableValue = atof(stringMatrix[i][j-3].c_str());
+				}
+				else
+				if(j == 0)
+				{
+					variableValue = atof(stringMatrix[i-1][stringMatrix[i-1].size()-1].c_str());
+				}
+				else
+				if(j == 0 && i == 0)
+				{
+					cout << "Nao e possivel realizar essa leitura" << endl;
+				}
+
+
+			}
+		
 		}
 	}
-	
+
 	return variableValue;
 }
 
-double POLOIO::getVariable(string name1, string name2, string name3, string name4, string direction)
+string POLOIO::getWord(string name1, string name2, string name3, string direction)
+{
+	for(int i = 0; i < stringMatrix.size(); i++)
+	{
+		for(int j =0; j < stringMatrix[i].size(); j++)
+		{
+			
+			if(stringMatrix[i][j] == name3 && stringMatrix[i][j-1] == name2 && stringMatrix[i][j-2] == name1 && direction == "right")
+			{
+				if((j+1) < stringMatrix[i].size())
+				{
+					word = atof(stringMatrix[i][j+1].c_str());
+				}
+				else
+				if((j+1) == stringMatrix[i].size())
+				{
+					word = atof(stringMatrix[i+1][0].c_str());
+				}
+			}
+			else
+			if(stringMatrix[i][j] == name3 && stringMatrix[i][j-1] == name2 && stringMatrix[i][j-2] == name1 && direction == "left")
+			{
+				if(j > 0 )
+				{
+					word = stringMatrix[i][j-3];
+				}
+				else
+				if(j == 0)
+				{
+					word = atof(stringMatrix[i-1][stringMatrix[i-1].size()-1].c_str());
+				}
+				else
+				if(j == 0 && i == 0)
+				{
+					cout << "Nao e possivel realizar essa leitura" << endl;
+				}
+
+
+			}
+		
+		}
+	}
+
+	return word;
+}
+
+double POLOIO::getParamVal(string name1, string name2, string name3, string name4, string direction)
 {
 	for(int i = 0; i < stringMatrix.size(); i++)
 	{
@@ -380,4 +530,131 @@ vector<vector<string>> POLOIO::getStringMatrix(string name, std::string directio
 	}
 
 	return matrixTemp;
+}
+
+vector<double> POLOIO::getColumnMatrix(string name, string direction, int numberOfLines, int columnNumber)
+{
+	vector<double> doubleColumn;
+
+	vector<vector<double>> doubleMatrix;
+	doubleMatrix.resize(numberOfLines);
+
+	vector<vector<string>> matrixTemp;
+	matrixTemp.resize(numberOfLines);
+
+	if(direction == "right")
+	{
+		for(int i = 0; i < stringMatrix.size(); i++)
+		{
+			for(int j =0; j < stringMatrix[i].size(); j++)
+			{
+				if(stringMatrix[i][j] == name)
+				{
+					for(int z = 1; z <= numberOfLines; z++)
+					{
+						for(int t = 0; t < stringMatrix[i+z].size(); t++)
+						{
+							matrixTemp[z-1].push_back(stringMatrix[i+z][t]);
+							doubleMatrix[z-1].push_back(atof(stringMatrix[i+z][t].c_str()));
+						}
+					}
+				}
+			}
+		}
+	}
+	else
+	if(direction == "left")
+	{
+		int contador = -1;
+
+		for(int i = 0; i < stringMatrix.size(); i++)
+		{
+			for(int j =0; j < stringMatrix[i].size(); j++)
+			{
+				if(stringMatrix[i][j] == name)
+				{
+					for(int z =  numberOfLines; z > 0; z--)
+					{
+						for(int t = 0; t < stringMatrix[i + contador].size(); t++)
+						{
+							matrixTemp[z-1].push_back(stringMatrix[i + contador][t]);
+							doubleMatrix[z-1].push_back(atof(stringMatrix[i + contador][t].c_str()));
+						}
+
+						contador--;
+					}
+				}
+			}
+		}
+
+	}
+
+	for(int i =0; i < numberOfLines; i++)
+	{
+		for(int j =0; j < doubleMatrix[0].size();j++)
+		{
+			if(j == columnNumber)
+			{
+				doubleColumn.push_back(doubleMatrix[i][j]);
+			}
+				
+		}
+	}
+
+	return doubleColumn;
+}
+
+vector<double> POLOIO::getColumnMatrix(string name1, string name2, string direction, int numberOfLines, int columnNumber)
+{
+	vector<double> doubleColumn;
+
+	vector<vector<double>> doubleMatrix;
+	doubleMatrix.resize(numberOfLines);
+
+	vector<vector<string>> matrixTemp;
+	matrixTemp.resize(numberOfLines);
+
+	if(direction == "right")
+	{
+		for(int i = 0; i < stringMatrix.size(); i++)
+		{
+			for(int j =0; j < stringMatrix[i].size(); j++)
+			{
+				if(stringMatrix[i][j] == name1 && stringMatrix[i][j+1] == name2)
+				{
+					for(int z = 1; z <= numberOfLines; z++)
+					{
+						for(int t = 0; t < stringMatrix[i+z].size(); t++)
+						{
+							matrixTemp[z-1].push_back(stringMatrix[i+z][t]);
+							doubleMatrix[z-1].push_back(atof(stringMatrix[i+z][t].c_str()));
+						}
+					}
+				}
+			}
+		}
+	}
+	
+	cout << "numberOfLines  "  << numberOfLines << endl;
+
+	for(int i =0; i < numberOfLines ; i++)
+	{
+		for(int j =0; j < doubleMatrix[0].size();j++)
+		{
+			if(j == columnNumber)
+			{
+				/*cout << "i  "  << i << endl;
+				cout << "j  "  << j << endl;
+				cout << "doubleMatrix[i][j]  " << doubleMatrix[i][j] << endl;*/
+				doubleColumn.push_back(doubleMatrix[i][j]);
+
+				//cout << "doubleColumn  " << doubleColumn[i] << endl;
+			}
+				
+		}
+	}
+
+	
+
+	return doubleColumn;
 }

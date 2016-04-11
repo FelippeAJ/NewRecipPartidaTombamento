@@ -3,33 +3,66 @@
 
 #include <cmath>
 #include "Constants.h"
-#include "Input.h"
-
+#include "EffectiveForceArea.h"
+#include "SimulationParameters.h"
 
 class Valve
 {
 public:
 	Valve();
 
-	void setNatFrequency( double natFrequencyValue);
-	void setStiffness( double stiffnessValue);
-	void setDamping( double dampingValue);  
-	void setPreTension(double preTensionValue);
-	
-	double getNatFrequency();
-	double getStiffness();
-	double getDamping();
-	double getPreTension();
-	double getEquivalentMass();
+	void calcValveEquivMass();
+	void calcEquivMass();
 
-	void calcEquivalentMass();
+	void calcPreTensForAct();
 
-protected:
-	double natFrequency;
-	double stiffness;
-	double damping;
-	double preTension;
-	double equivalentMass;	
+	void calcSucStickForAct(int stickForId);
+	void calcSucResultFor(double compChambPres, double sucChambPres);
+	void calcSucAccel();
+	void calcSucDisp();
+	void calcSucVel();
+
+	void calcDisStickForAct();
+	void calcDisResultFor(double compChambPres, double disChambPres);
+	void calcDisAccel();
+	void calcDisDisp();
+	void calcDisVel();
+
+	double getResultFor();
+	double getAccel();
+	double getVel();
+	double getDisp();
+
+	void incremId();
+
+	static int  id;
+	int cont;
+
+	EffectiveForceArea		effForArObj;
+	SimulationParameters	simulPar;
+ 
+//protected:
+	int	   valveNum;
+	double valveStickFor;
+	double valvePreTens;
+	double valveNatFreq;
+	double valveStiff;
+	double valveDamp;
+	double valveEquivMass;	
+	double natFreq;
+	double stiff;
+	double equivMass;
+	double stickForAct;
+	double preTensAct;
+	double resultFor;
+	double disp;
+	double vel;
+	double accel;
+	double boostHeight;
+	double impelHeight;
+	double impelPreTens;
+	double stopHeight;
+
 };
 
 #endif

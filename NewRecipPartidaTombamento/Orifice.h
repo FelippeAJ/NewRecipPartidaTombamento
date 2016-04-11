@@ -2,47 +2,98 @@
 #define ORIFICE_H
 
 #include <cmath>
-#include "Input.h"
+#include <iostream>
 #include "EffectiveFlowArea.h"
-
+#include "POLOIO.h"
+#include "Refrigerant.h"
 
 class Orifice
 {
 public:
 	Orifice();
 
-	void calcMassFlow(double gasConst, double specificHeatsRatioMedia, double upstreamTemp, double pressRatio, double  upstreamPress);
-	void calcFlow();
+	void calcSucMassFl();
+	void calcDisMassFl();
+	void calcFl();
 	void calcMassSum(double timeStep);
-	void calcEnergySum(double timeStep, double enthalpy);
-	void calcSuperheatingMassLoses(double suctionChamberRho, double cylinderRho, double timeStep);
 
-	void setDirection(string directionName);
-	void setMassFlow(double massFlowValue);
+	void setMassFl(double massFlVal);
+	
+	string getDirection();
+	double getSpecHeatRatMed();
+	double getMassFl();
+	double getFl();
+	double getBackf();
+	double getMassSumFl();
+	double getMassSumBackf();
 
-	string getDirection();	
-	double getMassFlow();
-	double getFlux();
-	double getBackFlow();
-	double getMassSumFlux();
-	double getMassSumBackflow();
-
-	void incrementId();
+	void incremId();
 	static int id;
 
-	EffectiveFlowArea effectFlowAreaObj;
+	EffectiveFlowArea effFlAreaObj;
 
-protected:
+	void calcSpecHeatRatMed(double sucChambSpecHeatRat, double disChambSpecHeatRat);
+	void calcCritPress();
+	
+	void calcSucUpTemp(double compChambTemp, double sucChambTemp, double compChambPress, double sucChambPress);
+	void calcDisUpTemp(double compChambTemp, double disChambTemp, double compChambPress, double disChambPress);
+
+	void calcSucUpPress(double compChambPress, double sucChambPress);
+	void calcDisUpPress(double compChambPress, double disChambPress);
+
+	void calcSucPressRat(double compChambPress, double sucChambPress);
+	void calcDisPressRat(double compChambPress, double disChambPress);
+	
+	void calcTotSucMassFl(double sucMassFl);
+	void calcTotSucFl(double sucFlux);
+	void calcTotSucBackf(double sucBackflow);
+	void calcTotDisMassFl(double disMassFlow);
+	void calcTotDisFl(double disFlux);
+	void calcTotDisBackf(double disBackflow);
+
+	void setTotSucMassFl(double totSucMassFlVal);
+	void setTotSucFl(double totSucFlVal);
+	void setTotSucBackf(double totSucBackfVal);
+	void setTotDisMassFl(double totDisMassFlVal);
+	void setTotDisFl(double totDisFlVal);
+	void setTotDisBackf(double totDisBackfVal);
+
+	double getTotSucMassFl();
+	double getTotSucFl();
+	double getTotSucBackf();
+	double getTotDisMassFl();
+	double getTotDisFl();
+	double getTotDisBackf();
+
+	Refrigerant refrig;
+
+//protected:
+
 	string direction;
-	double massFlow;	
-	double flux;
-	double backflow;
+	double massFl;	
+	double fl;
+	double backf;
 
-	double massSumFlux;
-	double energySumFlux;
-	double massSumBackflow;
-	double energySumBackflow;
-	double superheatingMassLoses;
+	double massSumFl;
+	double enSumFl;
+	double massSumBackf;
+	double enSumBackf;
+	double supheatMassLoss;
+
+	double specHeatRatMed;
+	double critPress;
+	double sucUpTemp;
+	double sucUpPress;
+	double sucPressRat;
+	double totSucMassFl;
+	double totSucFl;
+	double totSucBackf;
+	double disUpTemp;
+	double disUpPress;
+	double disPressRat;
+	double totDisMassFl;
+	double totDisFl;
+	double totDisBackf;
 };
 
 #endif

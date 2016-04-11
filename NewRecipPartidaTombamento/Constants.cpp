@@ -8,4 +8,3 @@ Constants::Constants()
 {
 	
 }
-

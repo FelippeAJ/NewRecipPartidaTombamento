@@ -63,6 +63,11 @@ void Work::calcSucValveWork(double sucLinePres, double sucChamberPres)
 	{
 		sucValveWork = 0;
 	}
+
+	termo1 = (workVolume - oldWorkVolume);
+	termo2 = sucChamberPres;
+	termo3 =  workMediaPressure;
+	termo4 = (sucChamberPres - workMediaPressure);
 }
 
 void Work::calcDisValveWork(double disLinePres, double disChamberPres)
@@ -106,13 +111,13 @@ void Work::calcDisChamberWork(double disLinePres, double disChamberPres)
 
 void Work::calcLeakWork(double cylinderRho, double cylinderTemp, double leakMassFlow, double timeStep)
 {
-	refrigerant.setTemperature(cylinderTemp);
+	refrig.setTemp(cylinderTemp);
 
-	refrigerant.setRho(cylinderRho);
+	refrig.setRho(cylinderRho);
 
-	refrigerant.calcSpecificHeats();
+	refrig.calcSpecHeat();
 
-	leakWork += leakMassFlow*timeStep*(refrigerant.getCp() - refrigerant.getCv())*cylinderTemp;
+	leakWork += leakMassFlow*timeStep*(refrig.getCp() - refrig.getCv())*cylinderTemp;
 }
 
 double Work::getRefrigerantWork()

@@ -1,8 +1,7 @@
 #ifndef BEARINGS_H
 #define BEARINGS_H
 
-#include "Input.h"
-#include "ExperimentalTemperatures.h"
+#include "POLOIO.h"
 #include "Oil.h"
 
 class Bearings
@@ -10,21 +9,22 @@ class Bearings
 public:
 	Bearings();
 
-	void setLoses(double losesValue);
-	void setAvaliationTemperature(double avaliationTemperatureValue);
+	void calcBearingsLos(double motorExpTemp);
 
-	void calcBearingsLoses();
-
-	double getLoses();
+	double getLos();
 	double getAvaliationTemperature();
-	double getBearingsLoses();
+	double getBearingsLos();
+
+	Oil oilObj;
+
+	double expTemp;
 
 protected:
-	double loses;
+	double los;
 	double avaliationTemperature;
-	double bearingsLoses;
-	ExperimentalTemperatures expTemperature;
-	Oil oil;
+	double bearingsLos;
+	
+	
 };
 
 #endif
