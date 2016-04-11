@@ -1,0 +1,140 @@
+Refrigerant	
+refrigerant	PROPANE	
+viscosity_thermalcond	refprop	
+
+
+Mechanism	
+mechanism_displacement	crank_rod	
+axis_reversibility	2.00E-03	
+axis_rotation	3000.0	
+
+crank_eccentricity	8E-03	
+rod_length	3.847E-02	
+
+
+
+Compression_System	
+cylinder	straight	
+cylinder_bore	2.10E-02	
+cylinder_deadvolume	1.64E-07	
+piston_headlength	7.80E-03	
+piston_skirtlength	5.40E-03	
+
+
+Leak	
+gap	8.50E-06	
+seal	absent	
+
+
+
+Orifice	0	
+direction	suction	
+effectiveflowarea	0	effectivebackflowarea	0	effectiveforcearea	3.75E-05	backfloweffectiveforcearea	3.75E-05	valvedisplacement	0.00E+00	
+effectiveflowarea	9.14E-06	effectivebackflowarea	9.14E-06	effectiveforcearea	3.95E-05	backfloweffectiveforcearea	3.95E-05	valvedisplacement	5.00E-04	
+effectiveflowarea	1.40E-05	effectivebackflowarea	1.40E-05	effectiveforcearea	4.06E-05	backfloweffectiveforcearea	4.06E-05	valvedisplacement	1.00E-03	
+effectiveflowarea	1.64E-05	effectivebackflowarea	1.64E-05	effectiveforcearea	3.68E-05	backfloweffectiveforcearea	3.68E-05	valvedisplacement	1.50E-03	
+effectiveflowarea	1.78E-05	effectivebackflowarea	1.78E-05	effectiveforcearea	3.56E-05	backfloweffectiveforcearea	3.56E-05	valvedisplacement	2.00E-03	
+effectiveflowarea	1.88E-05	effectivebackflowarea	1.88E-05	effectiveforcearea	3.44E-05	backfloweffectiveforcearea	3.44E-05	valvedisplacement	2.50E-03	
+effectiveflowarea	1.96E-05	effectivebackflowarea	1.96E-05	effectiveforcearea	3.14E-05	backfloweffectiveforcearea	3.14E-05	valvedisplacement	3.00E-03	
+effectiveflowarea	2.02E-05	effectivebackflowarea	2.02E-05	effectiveforcearea	2.87E-05	backfloweffectiveforcearea	2.87E-05	valvedisplacement	3.50E-03	
+effectiveflowarea	2.03E-05	effectivebackflowarea	2.03E-05	effectiveforcearea	2.56E-05	backfloweffectiveforcearea	2.56E-05	valvedisplacement	4.00E-03	
+effectiveflowarea	1.96E-05	effectivebackflowarea	1.96E-05	effectiveforcearea	2.87E-05	backfloweffectiveforcearea	2.87E-05	valvedisplacement	4.50E-03	
+sticking_force	0.0	
+valve_natfrequency	280.0	
+valve_stiffness	220	
+valve_damping	0.145	
+natfrequency	280.0	
+stiffness	220	
+end	
+
+
+Orifice	1	
+direction	discharge	
+effectiveflowarea	0	effectivebackflowarea	0	effectiveforcearea	2.35E-05	backfloweffectiveforcearea	2.35E-05	valvedisplacement	0	
+effectiveflowarea	2.08E-06	effectivebackflowarea	2.08E-07	effectiveforcearea	1.33E-05	backfloweffectiveforcearea	1.33E-05	valvedisplacement	1.00E-04	
+effectiveflowarea	4.56E-06	effectivebackflowarea	4.56E-07	effectiveforcearea	1.19E-05	backfloweffectiveforcearea	1.19E-05	valvedisplacement	2.00E-04	
+effectiveflowarea	7.11E-06	effectivebackflowarea	7.11E-07	effectiveforcearea	1.38E-05	backfloweffectiveforcearea	1.38E-05	valvedisplacement	3.00E-04	
+effectiveflowarea	9.50E-06	effectivebackflowarea	9.50E-07	effectiveforcearea	1.60E-05	backfloweffectiveforcearea	1.60E-05	valvedisplacement	4.00E-04	
+effectiveflowarea	1.16E-05	effectivebackflowarea	1.16E-06	effectiveforcearea	1.73E-05	backfloweffectiveforcearea	1.73E-05	valvedisplacement	5.00E-04	
+effectiveflowarea	1.33E-05	effectivebackflowarea	1.33E-06	effectiveforcearea	1.74E-05	backfloweffectiveforcearea	1.74E-05	valvedisplacement	6.00E-04	
+effectiveflowarea	1.45E-05	effectivebackflowarea	1.45E-06	effectiveforcearea	1.68E-05	backfloweffectiveforcearea	1.68E-05	valvedisplacement	7.00E-04	
+effectiveflowarea	1.54E-05	effectivebackflowarea	1.54E-06	effectiveforcearea	1.58E-05	backfloweffectiveforcearea	1.58E-05	valvedisplacement	8.00E-04	
+effectiveflowarea	1.59E-05	effectivebackflowarea	1.59E-06	effectiveforcearea	1.48E-05	backfloweffectiveforcearea	1.48E-05	valvedisplacement	9.00E-04	
+effectiveflowarea	1.61E-05	effectivebackflowarea	1.61E-06	effectiveforcearea	1.41E-05	backfloweffectiveforcearea	1.41E-05	valvedisplacement	1.00E-03	
+effectiveflowarea	1.60E-05	effectivebackflowarea	1.60E-06	effectiveforcearea	1.37E-05	backfloweffectiveforcearea	1.37E-05	valvedisplacement	1.10E-03	
+effectiveflowarea	1.58E-05	effectivebackflowarea	1.58E-06	effectiveforcearea	1.36E-05	backfloweffectiveforcearea	1.36E-05	valvedisplacement	1.20E-03	
+sticking_force	0	
+impeller_height	0	
+impeller_pretension	-1	
+valve_natfrequency	395.0	
+valve_stiffness	220.0	
+valve_damping	4	
+stiffness	220.0	
+natfrequency	395.0	
+booster_height	0.0003	
+stopper_height	0.00174	
+end	
+
+
+
+
+
+Experimental_Temperatures	
+evaporation	-35.0	
+condesation	70.0	
+subcooling	32	
+superheating	32	
+suction_line	32	
+internal_environment	84.1224	
+suction_chamber	81.3854	
+cylinder_wall	111.205	
+discharge_chamber	154.04	
+discharge_muffler	122.491	
+discharge_line	87.3183	
+shell	77.6071	
+motor	90.3632	
+external_environment	32	
+bearings	84.1	
+oil	77.8	
+
+
+
+
+
+Oil	
+viscosisity_coef_1	-7.802279	
+viscosisity_coef_2	-0.00397	
+viscosisity_coef_3	0.029159	
+
+
+Bearings	loses	8.0	
+avaliation_temperature	84.1	
+
+
+Motor	
+coef	1	3.4694862881E-01	
+coef	2	9.4929115884E-03	
+coef	3	-8.0872855317E-05	
+coef	4	3.2014131495E-07	
+coef	5	-4.9996629902E-10	
+
+
+Simulation_Parameters	
+delta_theta	0.001	
+cycles_number	5	
+TLRNCE	0.002	
+RELAX	1	
+flag_thermal_balance	0	
+flag_thermal_simulation	1	
+direct_suction_factor	1	
+
+Post_Processing	
+cycle	last	
+frequency	1.0	
+
+
+
+
+
+
+

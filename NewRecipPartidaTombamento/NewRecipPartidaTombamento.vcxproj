@@ -1,0 +1,200 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{61389404-1AF1-45AE-A8D9-A3C72710794C}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <RootNamespace>NewRecipPartidaTombamento</RootNamespace>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <CharacterSet>Unicode</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <WarningLevel>Level3</WarningLevel>
+      <Optimization>Disabled</Optimization>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <WarningLevel>Level3</WarningLevel>
+      <PrecompiledHeader>
+      </PrecompiledHeader>
+      <Optimization>MaxSpeed</Optimization>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <IntrinsicFunctions>true</IntrinsicFunctions>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <EnableCOMDATFolding>true</EnableCOMDATFolding>
+      <OptimizeReferences>true</OptimizeReferences>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="AdimensionalNumbers.h" />
+    <ClInclude Include="AnnulusLeak.h" />
+    <ClInclude Include="Axis.h" />
+    <ClInclude Include="Bearings.h" />
+    <ClInclude Include="Booster.h" />
+    <ClInclude Include="Bundy.h" />
+    <ClInclude Include="CompressionChamber.h" />
+    <ClInclude Include="Compressor.h" />
+    <ClInclude Include="Constants.h" />
+    <ClInclude Include="Crank.h" />
+    <ClInclude Include="Cylinder.h" />
+    <ClInclude Include="DischargeChamber.h" />
+    <ClInclude Include="DischargeLine.h" />
+    <ClInclude Include="DischargeMuffler.h" />
+    <ClInclude Include="DynamicSystem.h" />
+    <ClInclude Include="DynamicSystemFactory.h" />
+    <ClInclude Include="EffectiveFlowArea.h" />
+    <ClInclude Include="EffectiveForceArea.h" />
+    <ClInclude Include="Evaporator.h" />
+    <ClInclude Include="ExperimentalTemperatures.h" />
+    <ClInclude Include="ExternalEnvironment.h" />
+    <ClInclude Include="gaussj.h" />
+    <ClInclude Include="GlobalHeatTransfer.h" />
+    <ClInclude Include="HeatTransfer.h" />
+    <ClInclude Include="HeatTransferRate.h" />
+    <ClInclude Include="Impeller.h" />
+    <ClInclude Include="Input.h" />
+    <ClInclude Include="InternalEnvironment.h" />
+    <ClInclude Include="Interpolation.h" />
+    <ClInclude Include="interp_1d.h" />
+    <ClInclude Include="interp_linear.h" />
+    <ClInclude Include="Jacobian.h" />
+    <ClInclude Include="Leak.h" />
+    <ClInclude Include="Mechanism.h" />
+    <ClInclude Include="Motor.h" />
+    <ClInclude Include="MultipleOrifices.h" />
+    <ClInclude Include="NewRecip.h" />
+    <ClInclude Include="NewtonRaphson.h" />
+    <ClInclude Include="nr3.h" />
+    <ClInclude Include="NumericalRecipes.h" />
+    <ClInclude Include="Oil.h" />
+    <ClInclude Include="Orifice.h" />
+    <ClInclude Include="OrificeFactory.h" />
+    <ClInclude Include="OrificesSet.h" />
+    <ClInclude Include="Piston.h" />
+    <ClInclude Include="POLOIO.h" />
+    <ClInclude Include="PostProcessing.h" />
+    <ClInclude Include="Refrigerant.h" />
+    <ClInclude Include="Residue.h" />
+    <ClInclude Include="Rod.h" />
+    <ClInclude Include="SimulationParameters.h" />
+    <ClInclude Include="Stator.h" />
+    <ClInclude Include="Stopper.h" />
+    <ClInclude Include="SuctionChamber.h" />
+    <ClInclude Include="SuctionLine.h" />
+    <ClInclude Include="SuctionMuffler.h" />
+    <ClInclude Include="ThermalBalance.h" />
+    <ClInclude Include="ThermalSimulation.h" />
+    <ClInclude Include="Valve.h" />
+    <ClInclude Include="Work.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="AdimensionalNumbers.cpp" />
+    <ClCompile Include="AnnulusLeak.cpp" />
+    <ClCompile Include="Axis.cpp" />
+    <ClCompile Include="Bearings.cpp" />
+    <ClCompile Include="Booster.cpp" />
+    <ClCompile Include="Bundy.cpp" />
+    <ClCompile Include="CompressionChamber.cpp" />
+    <ClCompile Include="Compressor.cpp" />
+    <ClCompile Include="Constants.cpp" />
+    <ClCompile Include="Crank.cpp" />
+    <ClCompile Include="Cylinder.cpp" />
+    <ClCompile Include="DischargeChamber.cpp" />
+    <ClCompile Include="DischargeLine.cpp" />
+    <ClCompile Include="DischargeMuffler.cpp" />
+    <ClCompile Include="DynamicSystem.cpp" />
+    <ClCompile Include="DynamicSystemFactory.cpp" />
+    <ClCompile Include="EffectiveFlowArea.cpp" />
+    <ClCompile Include="EffectiveForceArea.cpp" />
+    <ClCompile Include="Evaporator.cpp" />
+    <ClCompile Include="ExperimentalTemperatures.cpp" />
+    <ClCompile Include="ExternalEnvironment.cpp" />
+    <ClCompile Include="GlobalHeatTransfer.cpp" />
+    <ClCompile Include="HeatTransfer.cpp" />
+    <ClCompile Include="HeatTransferRate.cpp" />
+    <ClCompile Include="Impeller.cpp" />
+    <ClCompile Include="Input.cpp" />
+    <ClCompile Include="InternalEnvironment.cpp" />
+    <ClCompile Include="Interpolation.cpp" />
+    <ClCompile Include="Jacobian.cpp" />
+    <ClCompile Include="Leak.cpp" />
+    <ClCompile Include="main.cpp" />
+    <ClCompile Include="Mechanism.cpp" />
+    <ClCompile Include="Motor.cpp" />
+    <ClCompile Include="MultiploOrifices.cpp" />
+    <ClCompile Include="NewRecip.cpp" />
+    <ClCompile Include="NewtonRaphson.cpp" />
+    <ClCompile Include="Oil.cpp" />
+    <ClCompile Include="Orifice.cpp" />
+    <ClCompile Include="OrificeFactory.cpp" />
+    <ClCompile Include="OrificesSet.cpp" />
+    <ClCompile Include="Piston.cpp" />
+    <ClCompile Include="POLOIO.cpp" />
+    <ClCompile Include="PostProcessing.cpp" />
+    <ClCompile Include="Refrigerant.cpp" />
+    <ClCompile Include="Rod.cpp" />
+    <ClCompile Include="SimulationParameters.cpp" />
+    <ClCompile Include="Stator.cpp" />
+    <ClCompile Include="Stopper.cpp" />
+    <ClCompile Include="SuctionChamber.cpp" />
+    <ClCompile Include="SuctionLine.cpp" />
+    <ClCompile Include="SuctionMuffler.cpp" />
+    <ClCompile Include="ThermalBalance.cpp" />
+    <ClCompile Include="ThermalSimulation.cpp" />
+    <ClCompile Include="Valve.cpp" />
+    <ClCompile Include="Work.cpp" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
